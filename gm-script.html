@@ -1,0 +1,2398 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Скрипт продажу - General Machines</title>
+	<button id="notepad-toggle">📝</button>
+	<button id="calc-toggle">🧮</button>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f4f6f9;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+        }
+
+        /* --- Стилі для нотатника --- */
+        #notepad-container {
+            width: 250px;
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            bottom: 20px;
+            background: #fff9c4;
+            border: 1px solid #e0e0e0;
+            padding: 15px;
+            box-shadow: 2px 2px 10px rgba(0,0,0,0.1);
+            border-radius: 8px;
+            display: flex;
+            flex-direction: column;
+            z-index: 50;
+        }
+
+        #notepad-container h3 {
+            margin-top: 0;
+            font-size: 16px;
+            color: #555;
+        }
+
+        #notepad {
+            width: 100%;
+            height: 100%;
+            border: none;
+            background: transparent;
+            resize: none;
+            outline: none;
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 14px;
+        }
+
+        /* --- Основний контент --- */
+        #main-content {
+            margin-left: 290px;
+            max-width: 900px;
+            width: 100%;
+            background: white;
+            padding: 40px;
+            border-radius: 8px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+        }
+
+        h1, h2, h3, h4 {
+            color: #2c3e50;
+        }
+
+        .script-section {
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid #eee;
+        }
+
+        .manager-text {
+            background-color: #e8f4fd;
+            padding: 15px;
+            border-left: 5px solid #2196F3;
+            border-radius: 4px;
+            margin-bottom: 15px;
+            font-size: 16px;
+            line-height: 1.5;
+        }
+
+        .client-text {
+            background-color: #fce4ec;
+            padding: 15px;
+            border-left: 5px solid #e91e63;
+            border-radius: 4px;
+            margin-bottom: 15px;
+            font-style: italic;
+        }
+
+        /* --- Кнопки --- */
+        .btn-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .btn {
+            padding: 15px;
+            font-size: 14px;
+            cursor: pointer;
+            background-color: #fff;
+            border: 2px solid #2196F3;
+            color: #2196F3;
+            border-radius: 5px;
+            transition: all 0.3s;
+            font-weight: bold;
+            text-align: center;
+        }
+
+        .btn:hover {
+            background-color: #2196F3;
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(33, 150, 243, 0.3);
+        }
+
+        .btn.active {
+            background-color: #1976D2;
+            color: white;
+            border-color: #1976D2;
+        }
+
+        /* Стилі для різних типів кнопок (Культиватори) */
+        .btn-kns { /* Навісні - зелений відтінок рамки */
+            border-color: #4CAF50;
+            color: #4CAF50;
+        }
+        .btn-kns:hover, .btn-kns.active {
+            background-color: #4CAF50;
+            color: white;
+        }
+
+        .btn-kps { /* Причіпні - помаранчевий відтінок рамки */
+            border-color: #FF5722;
+            color: #FF5722;
+        }
+        .btn-kps:hover, .btn-kps.active {
+            background-color: #FF5722;
+            color: white;
+        }
+        
+        /* Стилі для різних типів кнопок (Лущильники) */
+        .btn-lpn { /* Навісні Лущильники - Пурпурний відтінок */
+            border-color: #9C27B0;
+            color: #9C27B0;
+        }
+        .btn-lpn:hover, .btn-lpn.active {
+            background-color: #9C27B0;
+            color: white;
+        }
+
+        .btn-lpr { /* Причіпні Лущильники - Темно-червоний/Бордовий */
+            border-color: #D32F2F;
+            color: #D32F2F;
+        }
+        .btn-lpr:hover, .btn-lpr.active {
+            background-color: #D32F2F;
+            color: white;
+        }
+
+        /* Кнопка ТТХ */
+        .btn-ttx {
+            background-color: #FF9800;
+            color: white;
+            border: none;
+            margin-bottom: 15px;
+            width: 100%;
+            max-width: 300px;
+        }
+        .btn-ttx:hover {
+            background-color: #F57C00;
+            box-shadow: 0 4px 8px rgba(255, 152, 0, 0.3);
+        }
+        
+        /* Стилі для КУН та ГРХ */
+        .btn-kun-select {
+            border-color: #009688;
+            color: #009688;
+        }
+        .btn-kun-select:hover, .btn-kun-select.active {
+            background-color: #009688;
+            color: white;
+        }
+
+        /* Стилі для КРН */
+        .btn-krn {
+            border-color: #5D4037; /* Brown color */
+            color: #5D4037;
+        }
+        .btn-krn:hover, .btn-krn.active {
+            background-color: #5D4037;
+            color: white;
+        }
+
+
+        /* --- Приховані елементи та анімації --- */
+        .hidden {
+            display: none;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .highlight {
+            font-weight: bold;
+            color: #d32f2f;
+            background: #fff3e0;
+            padding: 0 5px;
+        }
+
+        ul { margin-top: 5px; }
+        li { margin-bottom: 8px; }
+
+        /* --- МОДАЛЬНЕ ВІКНО (POP-UP) --- */
+        .modal {
+            display: none; 
+            position: fixed; 
+            z-index: 1001; 
+            left: 0;
+            top: 0;
+            width: 100%; 
+            height: 100%; 
+            overflow: auto; 
+            background-color: rgba(0,0,0,0.5); 
+            backdrop-filter: blur(2px);
+        }
+
+        .modal-content {
+            background-color: #fefefe;
+            margin: 5% auto; 
+            padding: 20px;
+            border: 1px solid #888;
+            width: 90%; 
+            max-width: 1100px;
+            border-radius: 8px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+            position: relative;
+        }
+
+        .close-btn {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+            position: absolute;
+            right: 20px;
+            top: 10px;
+        }
+
+        .close-btn:hover,
+        .close-btn:focus {
+            color: black;
+            text-decoration: none;
+            cursor: pointer;
+        }
+
+        /* Стилі таблиці ТТХ */
+        .ttx-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+            font-size: 13px;
+        }
+
+        .ttx-table th, .ttx-table td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+            vertical-align: top;
+        }
+
+        .ttx-table th {
+            background-color: #2196F3;
+            color: white;
+            position: sticky;
+            top: 0;
+            font-weight: 600;
+        }
+
+        .ttx-table tr:nth-child(even) {background-color: #f8f9fa;}
+        .ttx-table tr:hover {background-color: #e9ecef;}
+        
+        .ttx-header {
+            font-weight: bold;
+            background-color: #e3f2fd;
+            min-width: 180px;
+        }
+        
+        /* Вирівнювання по центру для спільних значень */
+        .text-center {
+            text-align: center !important;
+        }
+
+        /* Роздільник таблиць */
+        .table-separator {
+            margin-top: 30px;
+            margin-bottom: 10px;
+            border-bottom: 2px solid #2196F3;
+            padding-bottom: 5px;
+            color: #1565C0;
+            font-size: 18px;
+        }
+
+	/* ===== Floating calculator button (desktop + mobile) ===== */
+#calc-toggle {
+    position: fixed;
+    bottom: 90px;
+    right: 15px;
+    background: #4CAF50;
+    color: #fff;
+    border: none;
+    border-radius: 50%;
+    width: 60px;
+    height: 60px;
+    font-size: 26px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+    z-index: 2100;
+    cursor: pointer;
+    transition: transform 0.15s ease;
+}
+
+#calc-toggle:hover {
+    transform: scale(1.05);
+}
+
+
+	/* =========================
+   /* =========================
+   📱 MOBILE VERSION (Центрування)
+   ========================= */
+@media (max-width: 768px) {
+
+    body {
+        padding: 10px;
+        display: block;
+        text-align: center; /* Центрує текст */
+    }
+
+    /* --- Нотатник --- */
+    #notepad-container {
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        top: auto;
+        height: 45vh;
+        width: 100%;
+        border-radius: 16px 16px 0 0;
+        box-shadow: 0 -4px 15px rgba(0,0,0,0.25);
+        transform: translateY(100%);
+        transition: transform 0.3s ease;
+        z-index: 2000;
+    }
+
+    #notepad-container.open {
+        transform: translateY(0);
+    }
+
+    #notepad {
+        font-size: 16px;
+        width: 90%;
+        margin: 0 auto; /* Центрує нотатник */
+    }
+
+    /* Кнопка відкриття нотаток */
+    #notepad-toggle {
+        position: fixed;
+        bottom: 15px;
+        right: 15px;
+        background: #FFD54F;
+        color: #333;
+        border: none;
+        border-radius: 50%;
+        width: 60px;
+        height: 60px;
+        font-size: 26px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+        z-index: 2100;
+        cursor: pointer;
+    }
+
+    /* --- Основний контент --- */
+    #main-content {
+        margin-left: 0;
+        padding: 20px 15px;
+        border-radius: 12px;
+        max-width: 100%;
+        margin: 0 auto; /* Центрує основний контент */
+    }
+
+    h1 { font-size: 22px; }
+    h2 { font-size: 20px; }
+    h3 { font-size: 18px; }
+
+    /* --- Тексти --- */
+    .manager-text,
+    .client-text {
+        font-size: 15px;
+        padding: 12px;
+        text-align: left; /* Вирівнювання тексту по лівому краю для кращої читаємості */
+    }
+
+    /* --- Кнопки --- */
+    .btn-grid {
+        grid-template-columns: 1fr;
+        gap: 12px;
+        justify-items: center; /* Центрує кнопки */
+    }
+
+    .btn {
+        font-size: 15px;
+        padding: 16px;
+        border-radius: 10px;
+        width: 80%; /* Кнопки стають по ширині контейнера */
+        margin: 0 auto; /* Центрує кнопки */
+    }
+
+    /* --- Кнопка ТТХ --- */
+    .btn-ttx {
+        width: 100%;
+        font-size: 16px;
+    }
+
+    /* --- Модалка --- */
+    .modal-content {
+        width: 95%;
+        margin: 10% auto;
+        padding: 15px;
+    }
+
+    /* --- Таблиці --- */
+    .ttx-table {
+        font-size: 13px;
+        min-width: 700px;
+        margin: 0 auto; /* Центрує таблицю */
+    }
+
+    .modal-content > div {
+        overflow-x: auto;
+    }
+}
+	@media (max-width: 768px) {
+
+    /* Кнопка калькулятора */
+    #calc-toggle {
+        position: fixed;
+        bottom: 90px; /* трохи вище кнопки нотаток */
+        right: 15px;
+        background: #4CAF50;
+        color: #fff;
+        border: none;
+        border-radius: 50%;
+        width: 60px;
+        height: 60px;
+        font-size: 26px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+        z-index: 2100;
+        cursor: pointer;
+    }
+
+    #calc-toggle:active {
+        transform: scale(0.95);
+    }
+}
+
+}
+
+    </style>
+</head>
+<body>
+
+    <!-- Блок нотаток -->
+    <div id="notepad-container">
+        <h3>📝 Нотатки менеджера</h3>
+        <textarea id="notepad" placeholder="Ім'я клієнта, телефон, важливі деталі..."></textarea>
+    </div>
+
+    <!-- Модальне вікно ТТХ -->
+    <div id="ttxModal" class="modal">
+        <div class="modal-content">
+            <span class="close-btn" onclick="openTTX('')">&times;</span>
+            
+            <h2 style="margin-top: 0;">Технічні характеристики (ТТХ)</h2>
+            
+            <div style="overflow-x: auto; max-height: 80vh;">
+                
+                <!-- Таблиці для Культиваторів -->
+                <div id="ttx-cultivator-content" class="hidden">
+                    <h3 class="table-separator">1. Культиватори Навісні (КНС)</h3>
+                    <table class="ttx-table">
+                        <thead>
+                            <tr>
+                                <th>Характеристика</th>
+                                <th>КНС 2.6</th>
+                                <th>КНС 3.0</th>
+                                <th>КНС 3.5</th>
+                                <th>КНС 4.0</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td class="ttx-header">Потужність трактора</td>
+                                <td>50-60 к.с.</td>
+                                <td>70-80 к.с.</td>
+                                <td>80-95 к.с.</td>
+                                <td>95-120 к.с.</td>
+                            </tr>
+                            <tr>
+                                <td class="ttx-header">Ширина захвату</td>
+                                <td>2.6 м</td>
+                                <td>3.0 м</td>
+                                <td>3.5 м</td>
+                                <td>4.0 м</td>
+                            </tr>
+                            <tr>
+                                <td class="ttx-header">Кількість робочих органів</td>
+                                <td>12</td>
+                                <td>14</td>
+                                <td>16</td>
+                                <td>18</td>
+                            </tr>
+                            <tr>
+                                <td class="ttx-header">Вага (залежно від стійки)</td>
+                                <td>600 кг</td>
+                                <td>750 кг</td>
+                                <td>825-870 кг</td>
+                                <td>970 кг</td>
+                            </tr>
+                            <tr>
+                                <td class="ttx-header">Розміри (Д/Ш/В)</td>
+                                <td>2.75×2.8×1.05</td>
+                                <td>2.75×3.2×1.05</td>
+                                <td>2.75×3.7×1.05</td>
+                                <td>2.75×4.2×1.05</td>
+                            </tr>
+                            <tr>
+                                <td class="ttx-header">Швидкість роботи</td>
+                                <td colspan="4" class="text-center">13-15 км/год ідеал</td>
+                            </tr>
+                            <tr>
+                                <td class="ttx-header">Глибина обробки</td>
+                                <td colspan="4" class="text-center">4-12 см</td>
+                            </tr>
+                            <tr>
+                                <td class="ttx-header">Варіанти стійок</td>
+                                <td colspan="4" class="text-center">S або DV</td>
+                            </tr>
+                            <tr>
+                                <td class="ttx-header">S-подібна стійка</td>
+                                <td colspan="4" class="text-center">70×12, 580 мм, лапа 260 мм</td>
+                            </tr>
+                            <tr>
+                                <td class="ttx-header">DV двовиткова стійка</td>
+                                <td colspan="4" class="text-center">30×30, 560 мм, лапа 280 мм</td>
+                            </tr>
+                            <tr>
+                                <td class="ttx-header">Тип грабліни</td>
+                                <td colspan="4" class="text-center">Пружинна, дворядна, паралелограм, Ø10 мм</td>
+                            </tr>
+                            <tr>
+                                <td class="ttx-header">Товщина рами</td>
+                                <td colspan="4" class="text-center">80х80х5мм</td>
+                            </tr>
+                            <tr>
+                                <td class="ttx-header">Кількість рядів</td>
+                                <td colspan="4" class="text-center">3</td>
+                            </tr>
+                            <tr>
+                                <td class="ttx-header">Крок розташування стійок</td>
+                                <td colspan="4" class="text-center">220 мм</td>
+                            </tr>
+                            <tr>
+                                <td class="ttx-header">Міжцентрова відстань у ряду</td>
+                                <td colspan="4" class="text-center">660 мм</td>
+                            </tr>
+                            <tr>
+                                <td class="ttx-header">Коток</td>
+                                <td colspan="4" class="text-center">Ø320, пластинчатий/трубчатий, прямий/спіральний</td>
+                            </tr>
+                        </tbody>
+                    </table>
+
+                    <h3 class="table-separator">2. Культиватори Причіпні (КПС / КПРС)</h3>
+                    <table class="ttx-table">
+                        <thead>
+                            <tr>
+                                <th>Характеристика</th>
+                                <th>КПС 4.0 (причіпний)</th>
+                                <th>КПРС 5.0 (причіпний, складаний)</th>
+                                <th>КПРС 6.0 (причіпний, з Bellota)</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td class="ttx-header">Під трактори</td>
+                                <td>95-120 к.с.</td>
+                                <td>110-140 к.с.</td>
+                                <td>140-200 к.с.</td>
+                            </tr>
+                            <tr>
+                                <td class="ttx-header">Ширина захвату</td>
+                                <td>4.0 м</td>
+                                <td>5.0 м</td>
+                                <td>6.0 м</td>
+                            </tr>
+                            <tr>
+                                <td class="ttx-header">Глибина обробки</td>
+                                <td>4 - 12 см</td>
+                                <td colspan="2" class="text-center">4 - 15 см</td>
+                            </tr>
+                            <tr>
+                                <td class="ttx-header">Вага (орієнтовно)</td>
+                                <td>1200 кг</td>
+                                <td>2200 кг</td>
+                                <td>2400 кг</td>
+                            </tr>
+                            <tr>
+                                <td class="ttx-header">Розміри (Д Ш В)</td>
+                                <td>4.1х3.7х1.5</td>
+                                <td>3.5х5.0х1.5</td>
+                                <td>4.1х6.2х1.5</td>
+                            </tr>
+                            <tr>
+                                <td class="ttx-header">Кількість робочих органів</td>
+                                <td>18</td>
+                                <td>22</td>
+                                <td>26</td>
+                            </tr>
+                            <tr>
+                                <td class="ttx-header">Транспортна ширина</td>
+                                <td>не потребує складання</td>
+                                <td colspan="2" class="text-center">складаний механізм</td>
+                            </tr>
+                            <tr>
+                                <td class="ttx-header">Товщина рами</td>
+                                <td colspan="3" class="text-center">80х80х5мм</td>
+                            </tr>
+                            <tr>
+                                <td class="ttx-header">Рядів обробки</td>
+                                <td colspan="3" class="text-center">3</td>
+                            </tr>
+                            <tr>
+                                <td class="ttx-header">Опція стійок</td>
+                                <td colspan="3" class="text-center">S або DV</td>
+                            </tr>
+                            <tr>
+                                <td class="ttx-header">S стійка</td>
+                                <td colspan="3" class="text-center">70×12, 580 мм, лапа 260 мм</td>
+                            </tr>
+                            <tr>
+                                <td class="ttx-header">DV стійка</td>
+                                <td colspan="3" class="text-center">30×30, 560 мм, лапа 280 мм</td>
+                            </tr>
+                            <tr>
+                                <td class="ttx-header">Грабліна</td>
+                                <td colspan="3" class="text-center">Пружинна, паралелограм, прут 10 мм</td>
+                            </tr>
+                            <tr>
+                                <td class="ttx-header">Коток</td>
+                                <td colspan="3" class="text-center">Прямий або спіральний, Ø320</td>
+                            </tr>
+                            <tr>
+                                <td class="ttx-header">Міжцентрова відстань стійок</td>
+                                <td colspan="3" class="text-center">660 мм</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Таблиця для Лущильників -->
+                <div id="ttx-husker-content" class="hidden">
+                    <h3 class="table-separator">3. Лущильники (ЛН / ЛП / ЛПР)</h3>
+                    <table class="ttx-table">
+                        <thead>
+                            <tr>
+                                <th>Характеристика</th>
+                                <th>ЛН 2.6 (Навісна)</th>
+                                <th>ЛП 2.6 (Причіпна)</th>
+                                <th>ЛН 3.2 (Навісна)</th>
+                                <th>ЛП 3.2 (Причіпна)</th>
+                                <th>ЛПР 4.2 (Причіпна)</th>
+                                <th>ЛПР 5.2 (Причіпна)</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td class="ttx-header">Ширина захвату</td>
+                                <td>2.6 м</td>
+                                <td>2.6 м</td>
+                                <td>3.2 м</td>
+                                <td>3.2 м</td>
+                                <td>4.2 м</td>
+                                <td>5.2 м</td>
+                            </tr>
+                            <tr>
+                                <td class="ttx-header">Тип агрегатування</td>
+                                <td>Навісний</td>
+                                <td>Причіпний</td>
+                                <td>Навісний</td>
+                                <td>Причіпний</td>
+                                <td>Причіпний (розкладний)</td>
+                                <td>Причіпний (розкладний)</td>
+                            </tr>
+                            <tr>
+                                <td class="ttx-header">Вага</td>
+                                <td>900 кг</td>
+                                <td>1600 кг</td>
+                                <td>1200 кг</td>
+                                <td>1800 кг</td>
+                                <td>2400 кг</td>
+                                <td>2900 кг</td>
+                            </tr>
+                            <tr>
+                                <td class="ttx-header">Кількість дисків</td>
+                                <td>18 шт.</td>
+                                <td>18 шт.</td>
+                                <td>22 шт.</td>
+                                <td>22 шт.</td>
+                                <td>30 шт.</td>
+                                <td>38 шт.</td>
+                            </tr>
+                            <tr>
+                                <td class="ttx-header">Діаметр дисків</td>
+                                <td colspan="6" class="text-center">510 мм (Bellota)</td>
+                            </tr>
+                            <tr>
+                                <td class="ttx-header">Клас трактора</td>
+                                <td>1.4 (80-90 к.с.)</td>
+                                <td>1.4 (80-90 к.с.)</td>
+                                <td>2.0 (від 100 к.с.)</td>
+                                <td>2.0 (від 100 к.с.)</td>
+                                <td>3.0 (від 150 к.с.)</td>
+                                <td>3.0 (від 170 к.с.)</td>
+                            </tr>
+                            <tr>
+                                <td class="ttx-header">Глибина обробки</td>
+                                <td colspan="6" class="text-center">до 10 см</td>
+                            </tr>
+                            <tr>
+                                <td class="ttx-header">Габарити (ДхШхВ), м</td>
+                                <td>2.6 × 2.7 × 1.1</td>
+                                <td>5.5 × 2.7 × 1.1</td>
+                                <td>2.6 × 3.3 × 1.1</td>
+                                <td>5.5 × 3.3 × 1.1</td>
+                                <td>6.4 × 4.5 × 1.4 (роб.)</td>
+                                <td>6.4 × 5.5 × 1.4 (роб.)</td>
+                            </tr>
+                            <tr>
+                                <td class="ttx-header">Коток</td>
+                                <td>Одинарний/Подвійний (на вибір)</td>
+                                <td>Тандемний (подвійний)</td>
+                                <td>Одинарний/Подвійний (на вибір)</td>
+                                <td>Тандемний (подвійний)</td>
+                                <td>Тандемний (4 шт)</td>
+                                <td>Тандемний (4 шт)</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Таблиця для КУН -->
+                <div id="ttx-kun-content" class="hidden">
+                    <h3 class="table-separator">4. Фронтальні навантажувачі КУН (General X / XL)</h3>
+                    <table class="ttx-table">
+                        <thead>
+                            <tr>
+                                <th>Характеристика</th>
+                                <th>GENERAL X</th>
+                                <th>GENERAL XL</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td class="ttx-header">Робоча висота</td>
+                                <td>4.3 м</td>
+                                <td>4.8 м</td>
+                            </tr>
+                            <tr>
+                                <td class="ttx-header">Максимальна вантажопідйомність</td>
+                                <td>до 2000 кг</td>
+                                <td>до 1500 кг</td>
+                            </tr>
+                            <tr>
+                                <td class="ttx-header">Максимальна висота підйому</td>
+                                <td>-</td>
+                                <td>4.8 м</td>
+                            </tr>
+                            <tr>
+                                <td class="ttx-header">Тип агрегатування</td>
+                                <td colspan="2" class="text-center">Навісний</td>
+                            </tr>
+                            <tr>
+                                <td class="ttx-header">Агрегатується з тракторами</td>
+                                <td>МТЗ (80, 82, 892, 920, 1025), ЮМЗ, Т40, але ковш тільки 1.6</td>
+                                <td>МТЗ-1221, МТЗ-1523 та всі моделі, на які підходить генерал Х</td>
+                            </tr>
+                            <tr>
+                                <td class="ttx-header">Змінні робочі органи</td>
+                                <td colspan="2" class="text-center">Так</td>
+                            </tr>
+                            <tr>
+                                <td class="ttx-header">Система швидкознімання стріли</td>
+                                <td colspan="2" class="text-center">Так</td>
+                            </tr>
+                            <tr>
+                                <td class="ttx-header">Копіювальна система</td>
+                                <td colspan="2" class="text-center">Так</td>
+                            </tr>
+                            <tr>
+                                <td class="ttx-header">Тип управління</td>
+                                <td colspan="2" class="text-center">Гідророзподільником трактора / Джойстиком</td>
+                            </tr>
+                            <tr>
+                                <td class="ttx-header">Гідропривід</td>
+                                <td colspan="2" class="text-center">Підйом: 50×80×630 ШС; Виворіт: 40×80×320</td>
+                            </tr>
+                            <tr>
+                                <td class="ttx-header">Маса підйому (випробувана)</td>
+                                <td>до 1800 кг (тестовано)</td>
+                                <td>-</td>
+                            </tr>
+                            <tr>
+                                <td class="ttx-header">Матеріал конструкції</td>
+                                <td colspan="2" class="text-center">Сталь товщиною 4–10 мм</td>
+                            </tr>
+                            <tr>
+                                <td class="ttx-header">EURONew Holland / Case / Lovol</td>
+                                <td>New Holland TD5.110 | Case JX110 | Armatrac 90, 100, 110 | Deutz-Fahr Agrofarm 115G | Lovol 1054 | YTO NLX 1024, 1054 | Zoomlion 1104 | Solis 105 | Farmer 10286 | Dong Feng</td>
+                                <td>Особливості: Посилена рама, довша стріла (+0.5 м), широкий ківш 2.2 м у комплекті</td>
+                            </tr>
+                        </tbody>
+                    </table>
+
+                    <h3 class="table-separator">5. Ковші (об’єм та вага)</h3>
+                    <table class="ttx-table">
+                        <thead>
+                            <tr>
+                                <th>Об’єм, м³</th>
+                                <th>Пшениця, кг</th>
+                                <th>Соняшник, кг</th>
+                                <th>Кукурудза, кг</th>
+                                <th>Вага (делівері)</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td class="ttx-header">1.6 (Будівельний)</td>
+                                <td class="text-center">≈470</td>
+                                <td class="text-center">≈240</td>
+                                <td class="text-center">≈470</td>
+                                <td class="text-center">230кг, 1.7 куб</td>
+                            </tr>
+                            <tr>
+                                <td class="ttx-header">1.8</td>
+                                <td class="text-center">≈620</td>
+                                <td class="text-center">≈310</td>
+                                <td class="text-center">≈620</td>
+                                <td class="text-center">-</td>
+                            </tr>
+                            <tr>
+                                <td class="ttx-header">2.0</td>
+                                <td class="text-center">800</td>
+                                <td class="text-center">400</td>
+                                <td class="text-center">800</td>
+                                <td class="text-center">-</td>
+                            </tr>
+                            <tr>
+                                <td class="ttx-header">2.2</td>
+                                <td class="text-center">≈945</td>
+                                <td class="text-center">≈475</td>
+                                <td class="text-center">≈945</td>
+                                <td class="text-center">-</td>
+                            </tr>
+                            <tr>
+                                <td class="ttx-header">2.4</td>
+                                <td class="text-center">≈1090</td>
+                                <td class="text-center">≈545</td>
+                                <td class="text-center">≈1090</td>
+                                <td class="text-center">300кг, 2.88куб</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                
+                <!-- Таблиця для Глибокорозпушувачів -->
+                <div id="ttx-ripper-content" class="hidden">
+                    <h3 class="table-separator">6. Глибокорозпушувачі (ГРХ)</h3>
+                    <table class="ttx-table">
+                        <thead>
+                            <tr>
+                                <th>Параметр</th>
+                                <th>GENERAL 2.0 м</th>
+                                <th>GENERAL 2.5 м</th>
+                                <th>GENERAL 3.0 м</th>
+                                <th>GENERAL 3.5 м</th>
+                                <th>GENERAL 4.0 м</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td class="ttx-header">Робоча ширина, м</td>
+                                <td>2.0</td>
+                                <td>2.5</td>
+                                <td>3.0</td>
+                                <td>3.5</td>
+                                <td>4.0</td>
+                            </tr>
+                            <tr>
+                                <td class="ttx-header">Робоча глибина, см</td>
+                                <td colspan="5" class="text-center">15-55</td>
+                            </tr>
+                            <tr>
+                                <td class="ttx-header">Кількість лап (стійок), шт</td>
+                                <td>3</td>
+                                <td>5</td>
+                                <td>5 / 7</td>
+                                <td>7 / 9</td>
+                                <td>7 / 9</td>
+                            </tr>
+                            <tr>
+                                <td class="ttx-header">Відстань між лапами, мм</td>
+                                <td>600</td>
+                                <td>500</td>
+                                <td>600 / 405</td>
+                                <td colspan="2" class="text-center">--</td>
+                            </tr>
+                            <tr>
+                                <td class="ttx-header">Рекомендована потужність трактора, к.с.</td>
+                                <td>від 130</td>
+                                <td>від 200</td>
+                                <td>200-250</td>
+                                <td colspan="2" class="text-center">--</td>
+                            </tr>
+                            <tr>
+                                <td class="ttx-header">Габарити в транспортному положенні, ширина, мм</td>
+                                <td>2020</td>
+                                <td>2640</td>
+                                <td colspan="3" class="text-center">---</td>
+                            </tr>
+                            <tr>
+                                <td class="ttx-header">Габарити в транспортному положенні, довжина, мм</td>
+                                <td>3200</td>
+                                <td>3200</td>
+                                <td colspan="3" class="text-center">---</td>
+                            </tr>
+                            <tr>
+                                <td class="ttx-header">Маса, кг</td>
+                                <td>1550</td>
+                                <td>1880</td>
+                                <td colspan="3" class="text-center">---</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Таблиця для КРН (Нова) -->
+                <div id="ttx-krn-content" class="hidden">
+                    <h3 class="table-separator">7. Культиватори міжрядні (КРН)</h3>
+                    <table class="ttx-table">
+                        <thead>
+                            <tr>
+                                <th>Параметр</th>
+                                <th>КРН 4.2 м</th>
+                                <th>КРН 5.6 м (суцільна рама)</th>
+                                <th>КРН 5.6 м базовий</th>
+                                <th>КРН 5.6 м з бочкою для рідких добрив</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td class="ttx-header">Тип</td>
+                                <td>міжрядний/прополочний</td>
+                                <td colspan="3" class="text-center">міжрядний</td>
+                            </tr>
+                            <tr>
+                                <td class="ttx-header">Спосіб агрегатування</td>
+                                <td colspan="4" class="text-center">навісний</td>
+                            </tr>
+                            <tr>
+                                <td class="ttx-header">Робоча ширина, м</td>
+                                <td>4.2</td>
+                                <td>5.6</td>
+                                <td>~5.6</td>
+                                <td>~5.6</td>
+                            </tr>
+                            <tr>
+                                <td class="ttx-header">Кількість рядів/секцій</td>
+                                <td>6</td>
+                                <td>8–9</td>
+                                <td colspan="2" class="text-center">8</td>
+                            </tr>
+                            <tr>
+                                <td class="ttx-header">Регулювання міжряддя</td>
+                                <td>45–75 см</td>
+                                <td>так</td>
+                                <td colspan="2" class="text-center">45–75 см</td>
+                            </tr>
+                            <tr>
+                                <td class="ttx-header">Глибина обробки</td>
+                                <td colspan="2" class="text-center">+2 – -9 см (ручне)</td>
+                                <td>~100 мм</td>
+                                <td>не вказано</td>
+                            </tr>
+                            <tr>
+                                <td class="ttx-header">Кліренс рами</td>
+                                <td colspan="4" class="text-center">~70 см</td>
+                            </tr>
+                            <tr>
+                                <td class="ttx-header">Паралелограмна система</td>
+                                <td colspan="4" class="text-center">так</td>
+                            </tr>
+                            <tr>
+                                <td class="ttx-header">Сайлентблоки на секціях</td>
+                                <td colspan="4" class="text-center">так</td>
+                            </tr>
+                            <tr>
+                                <td class="ttx-header">Маса агрегату</td>
+                                <td>не вказано</td>
+                                <td>~1200 кг (оцінка)</td>
+                                <td colspan="2" class="text-center">не вказано</td>
+                            </tr>
+                            <tr>
+                                <td class="ttx-header">Необхідна потужність трактора</td>
+                                <td>~100 к.с. (RIA)</td>
+                                <td>~80 к.с. (оцінка)</td>
+                                <td>~100 к.с. (RIA)</td>
+                                <td>~100 к.с. (оцінка)</td>
+                            </tr>
+                            <tr>
+                                <td class="ttx-header">Рекомендована потужність (за оголошенням)</td>
+                                <td>100 к.с.</td>
+                                <td>—</td>
+                                <td>100 к.с.</td>
+                                <td>—</td>
+                            </tr>
+                            <tr>
+                                <td class="ttx-header">Захисні диски/щитки (опції)</td>
+                                <td colspan="4" class="text-center">так</td>
+                            </tr>
+                            <tr>
+                                <td class="ttx-header">Задні борони / коток</td>
+                                <td colspan="4" class="text-center">так (опції)</td>
+                            </tr>
+                            <tr>
+                                <td class="ttx-header">Внесення рідких добрив</td>
+                                <td colspan="2" class="text-center">можливо</td>
+                                <td>можливо</td>
+                                <td>так (бак+розподіл)</td>
+                            </tr>
+                            <tr>
+                                <td class="ttx-header">Кліренс міжряддя/кліренс</td>
+                                <td colspan="4" class="text-center">високий (70 см)</td>
+                            </tr>
+                            <tr>
+                                <td class="ttx-header">Ціна (орієнт., грн)</td>
+                                <td>~290 000</td>
+                                <td>~250 000 – 310 000</td>
+                                <td>~310 000 – 420 000</td>
+                                <td>~395 000 – 420 000</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    
+                    <h3 class="table-separator" style="margin-top: 50px;">Комплект для внесення рідких добрив для КРН 5,6:</h3>
+                    <ul style="list-style-type: disc; margin-left: 20px; font-size: 14px; background: #e8f4fd; padding: 15px; border-radius: 4px;">
+                        <li>Поліетиленова ємність 500 літрів, товщина стінки 5,5 мм., кришка та фільтр.</li>
+                        <li>Рама з високоякісної сталі пофарбована порошковою фарбою.</li>
+                        <li>Комплект строп (бандаж) для надійної фіксації резервуара.</li>
+                        <li>Комплект форсунок Wilger (Канада).</li>
+                        <li>Система візуального контролю потоку рідини (ротаметри) Wilger (Канада).</li>
+                        <li>Манометр з нержавіючої сталі з гідрозаповнювачом.</li>
+                        <li>Кран забору.</li>
+                        <li>Система заправки через Camlock 2".</li>
+                        <li>Фільтри грубої і тонкої очистки.</li>
+                        <li>Насос Remco 5500 серії потужністю 20л/хв 12 В (арт. 5537-2E1-63B).</li>
+                        <li>Комплект кабелів, пульт-реле з кінцевим вимикачем, пульт-ШІМ-регулятор для контролю роботи насоса, арт. TF-01PR66, арт. TF-140121RK.</li>
+                        <li>Дозуючі шайби, три комплекти.</li>
+                        <li>Трубка 10 мм з нержавіючої сталі 8 шт.</li>
+                        <li>Комплект метизів, хомутів для кріплення та надійної фіксації.</li>
+                        <li>Комплект шлангів.</li>
+                    </ul>
+
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <!-- Основний контент -->
+    <div id="main-content">
+
+        <!-- 1. Привітання -->
+        <div class="script-section">
+            <h2>1. Привітання та встановлення контакту</h2>
+            <div class="manager-text">
+                <strong>Менеджер:</strong> Добрий день! Завод General, мене звати Олександр. Скажіть, будь ласка, як я можу до Вас звертатись і що Вас цікавить?
+            </div>
+
+            <h3>Оберіть категорію товару:</h3>
+            <div class="btn-grid">
+                <button class="btn" onclick="selectProduct('cultivator')">1. Культиватори</button>
+                <button class="btn" onclick="selectProduct('husker')">2. Лущильники</button>
+                <button class="btn" onclick="selectProduct('kun')">3. КУН</button>
+                <button class="btn" onclick="selectProduct('ripper')">4. Глибокорозпушувач</button>
+                <button class="btn" onclick="selectProduct('krn')">5. КРН</button>
+                <button class="btn" onclick="alert('Розділ в розробці')">6. Пружинні борони</button>
+                <button class="btn" onclick="alert('Розділ в розробці')">7. Кран маніпулятор</button>
+                <button class="btn" onclick="alert('Розділ в розробці')">8. Компактор</button>
+            </div>
+        </div>
+
+        <!-- Секція Культиваторів (Готовий розділ) -->
+        <div id="cultivator-section" class="hidden">
+            <div class="script-section">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                    <h3>Навісні та Причіпні культиватори</h3>
+                    <button class="btn btn-ttx" onclick="openTTX('cultivator')">📊 Відкрити таблицю ТТХ</button>
+                </div>
+
+                <div class="manager-text">
+                    <strong>Менеджер:</strong> Так, звичайно, маємо і Навісні, і Причіпні. Скажіть, будь ласка, на яку потужність трактора розглядаєте культиватор?
+                </div>
+                
+                <h3>Оберіть потужність трактора:</h3>
+                <div class="btn-grid">
+                    <!-- Навісні КНС -->
+                    <button class="btn btn-kns" onclick="selectScript('kns', '2.6', this)">1. 50-60 к.с. -> 2.6м (Навісний)</button>
+                    <button class="btn btn-kns" onclick="selectScript('kns', '3.0', this)">2. 70-80 к.с. -> 3м (Навісний)</button>
+                    <button class="btn btn-kns" onclick="selectScript('kns', '3.5', this)">3. 80-95 к.с. -> 3.5м (Навісний)</button>
+                    <button class="btn btn-kns" onclick="selectScript('kns', '4.0', this)">100-120 к.с. -> 4м (Навісний)</button>
+                    
+                    <!-- Причіпні КПС/КПРС -->
+                    <button class="btn btn-kps" onclick="selectScript('kps4', 'КПС 4.0', this)">95-120 к.с. -> КПС 4м (Причіпний)</button>
+                    <button class="btn btn-kps" onclick="selectScript('kprs', 'КПРС 5.0', this)">110-140 к.с. -> КПРС 5м (Причіпний)</button>
+                    <button class="btn btn-kps" onclick="selectScript('kprs', 'КПРС 6.0', this)">140-200 к.с. -> КПРС 6м (Причіпний)</button>
+                </div>
+            </div>
+
+            <!-- СЦЕНАРІЇ КУЛЬТИВАТОРІВ (залишаються без змін) -->
+            <div id="script-kns" class="hidden">
+                <div class="script-section">
+                    <h2>2. Презентація рішення (КНС)</h2>
+                    <div class="manager-text">
+                        <strong>Менеджер:</strong> Супер, найкращий варіант для Вас буде <span id="dynamic-width-kns" class="highlight"></span> м захват. Він спеціально розроблений під трактори класу МТЗ-80/82 і подібні.<br><br>
+                        <strong>Що він робить за один прохід:</strong>
+                        <ul>
+                            <li>Оснащений 3-ма рядами лап, які розпушують ґрунт і підрізають весь бур'ян.</li>
+                            <li>Далі йде 2-х рядна гребінка, яка вирівнює поверхню ґрунту, розбиває грудочки і може працювати в 3-х режимах.</li>
+                            <li>А на завершення — коток, який формує верхній шар і ущільнює його для збереження вологи.</li>
+                        </ul>
+                        Фактично, за один прохід після оранки ви отримуєте рівний, пухкий, але злегка ущільнений ґрунт — якраз те, що треба для посівної.
+                    </div>
+                </div>
+
+                <div class="script-section">
+                    <h2>3. Вибір комплектації (Робочі органи)</h2>
+                    <div class="manager-text">
+                        <strong>Менеджер:</strong> Є 2 типи робочих органів на вибір, залежно від вашого ґрунту:
+                        <ul>
+                            <li><strong>Стійка двовиткова Bianchi з квадрата 30*30 (жорстка)</strong> — підходить під будь-який тип ґрунту, комплектується лапою 280 мм (яку я Вам рекомендую).</li>
+                            <li><strong>Стійка S-подібна Bellota 70*12 (пружинна)</strong> — підходить для легких піщаних та супіщаних ґрунтів, комплектується лапою 260 мм.</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="script-section">
+                    <h2>4. Аргументація (Чому саме цей агрегат?)</h2>
+                    <div class="manager-text">
+                        <strong>Менеджер:</strong> Хочу звернути увагу на особливості, яких немає у конкурентів:
+                        <ul>
+                            <li><strong>Модульна конструкція:</strong> Усі основні вузли уніфіковані та змінні. Будь-яку деталь можна зняти і поставити нову. При потребі ви можете докупити в нас причіпний пристрій і зробити з навісного — причіпний, що теж дуже зручно!</li>
+                            <li><strong>Регулювання:</strong> Глибина регулюється дуже просто — ззаду за допомогою кронштейнів котка (переставляєте палець). Діапазон від 4 до 15 см — можна і неглибоко закривати вологу, і глибше рихлити.</li>
+                            <li><strong>Висока прохідність (не забивається):</strong> Шахматне розміщення робочих органів (на наших культерах парна кількість). За рахунок цього ідеально вирізає весь бур'ян без пропусків і стабільно працює без зупинок навіть по вологому ґрунту, кукурудзі, соняшнику чи після важкої оранки.</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="script-section">
+                    <h2>5. "Козир" — Гарантія та Сервіс</h2>
+                    <div class="manager-text">
+                        <strong>Менеджер:</strong> Також ви отримуєте гарантію на 12 місяців, а саме РОЗШИРЕНУ.<br>
+                        Якщо раптом щось трапиться — ми одразу ж висилаємо вам потрібну деталь (або міняємо агрегат, якщо щось серйозне), щоб у Вас не стояла робота. Ми діємо на випередження: все для Вас, щоб ви могли спокійно працювати, а не чекати з моря погоди (поки інші роблять експертизу тижнями).<br>
+                        А вже після — ви нам висилаєте старі деталі. Дуже простий і надійний механізм!
+                    </div>
+                    <div class="client-text">
+                        <strong>(Клієнт):</strong> Зрозумів, яка ціна?
+                    </div>
+                </div>
+
+                <div class="script-section">
+                    <h2>6. Ціна та закриття угоди</h2>
+                    <div class="manager-text">
+                        <strong>Менеджер:</strong> Так, звичайно. Скажіть, будь ласка, з якої Ви області і яка форма розрахунку — за гроші чи з ПДВ?
+                    </div>
+                    <div class="client-text">
+                        <strong>(Клієнт):</strong> Вінницька область, за гроші. (Якщо з ПДВ — нагадати про Державну компенсацію -25%)
+                    </div>
+                    <div class="manager-text">
+                        <strong>Менеджер:</strong> Ціна <span class="highlight">185 000 грн</span> — це вже з доставкою до Вас в господарство.<br>
+                        Передоплат ніяких не потрібно. Привозимо — і Ви на місці з водієм розраховуєтесь.<br>
+                        Тоді пропоную оформляти замовлення, і в суботу культиватор вже буде у Вас в господарстві. Потрібна ваша точна адреса і ПІБ.
+                    </div>
+                </div>
+            </div>
+            <div id="script-kps-4" class="hidden">
+                <div class="script-section">
+                    <h2>2. Презентація рішення</h2>
+                    <div class="manager-text">
+                        <strong>Менеджер:</strong> Супер, найкращий варіант для Вас буде КПС 4м захват. Він спеціально розроблений під трактори 95-120 к.с.<br>
+                        За один прохід підготує ідеальну посівну підошву.<br><br>
+                        <strong>Як це працює:</strong>
+                        <ul>
+                            <li>Спершу 3 ряди лап розпушують ґрунт і підрізають весь бур'ян.</li>
+                            <li>Далі йде 2-х рядна пружинна гребінка, яка вирівнює поверхню, розбиває грудки (працює в 3-х режимах).</li>
+                            <li>А на завершення — коток, який формує верхній шар і ущільнює його для збереження вологи.</li>
+                        </ul>
+                        Фактично, за один прохід після оранки ви отримуєте рівний, пухкий, але злегка ущільнений ґрунт — якраз те, що треба для посівної.
+                    </div>
+                </div>
+
+                <div class="script-section">
+                    <h2>3. Конструктор (Вибір робочих органів)</h2>
+                    <div class="manager-text">
+                        <strong>Менеджер:</strong> Є 2 типи робочих органів на вибір:
+                        <ul>
+                            <li><strong>Стійка двовиткова Bianchi з квадрата 30*30 (жорстка).</strong><br>
+                                <em>Коментар:</em> Я Вам рекомендую саме цей варіант — він універсальний, підходить під будь-який тип ґрунту, комплектується лапою 280 мм.</li>
+                            <li><strong>Стійка S-подібна Bellota 70*12 (пружинна).</strong><br>
+                                <em>Коментар:</em> Підходить для легких піщаних та супіщаних ґрунтів, комплектується лапою 260 мм.</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="script-section">
+                    <h2>4. Аргументація (Чому не забивається і краще копіює?)</h2>
+                    <div class="manager-text">
+                        <strong>Менеджер:</strong> Особливість нашого культиватора — це ідеальне копіювання за рахунок плаваючої системи дишла (дає ідеально рівну передпосівну підошву).
+                        <ul>
+                            <li>Одночасно підіймається зад і перед культиватора (швидкість, зручність, транспортування).</li>
+                            <li>Колеса опорні і транспортні — однакові та взаємозамінні.</li>
+                            <li>Усі основні вузли уніфіковані. Захочете замінити коток на інший тип — це легко зробити.</li>
+                            <li><strong>Регулювання глибини (4-15 см):</strong> дуже зручно. Ззаду переставляєте палець на кронштейнах котка, спереду — крутите талрепи на колесах. Можна і вологу закривати неглибоко, і рихлити глибше.</li>
+                        </ul>
+                        <br>
+                        <strong>Прохідність (головний козир):</strong><br>
+                        Наш культиватор розроблений так, щоб не забивався навіть у найскладніших умовах.
+                        <ul>
+                            <li>Колеса не в середині, як в інших, а транспортні ззаду і опорні спереду.</li>
+                            <li>Шахматне розміщення робочих органів + парна кількість лап.</li>
+                        </ul>
+                        За рахунок цього він ідеально вирізає весь бур'ян без пропусків і стабільно працює на швидкості навіть по вологому ґрунту, кукурудзі чи соняшнику.
+                    </div>
+                </div>
+
+                <div class="script-section">
+                    <h2>5. Сервіс ("Гра на випередження")</h2>
+                    <div class="manager-text">
+                        <strong>Менеджер:</strong> Ви отримуєте гарантію на 12 місяців, а саме РОЗШИРЕНУ:<br>
+                        Якщо раптом щось трапиться — ми одразу ж висилаємо вам потрібну деталь (або міняємо агрегат, якщо щось серйозне), щоб у Вас не стояла робота.<br>
+                        Не так, як в інших: вислали деталь -> чекаєте експертизу тижнями -> отримуєте заміну. Ми діємо на випередження, щоб ви не чекали "з моря погоди". А вже потім вишлете нам стару деталь.<br>
+                        Хоча, якщо відверто, таких випадків майже не буває — механізм дуже надійний.
+                    </div>
+                    <div class="client-text">
+                        <strong>(Клієнт):</strong> Зрозумів, яка ціна?
+                    </div>
+                </div>
+
+                <div class="script-section">
+                    <h2>6. Фіналізація та Ціна</h2>
+                    <div class="manager-text">
+                        <strong>Менеджер:</strong> Так, звичайно. Скажіть будь ласка, з якої Ви області і яка форма розрахунку — за гроші чи з ПДВ?
+                    </div>
+                    <div class="client-text">
+                        <strong>(Клієнт):</strong> [Область], з ПДВ
+                    </div>
+                    <div class="manager-text">
+                        <em>(Примітка: Якщо з ПДВ — нагадати про Державну компенсацію -25%)</em><br><br>
+                        <strong>Менеджер:</strong> Ціна <span class="highlight">340 000 грн</span>. Це вже з доставкою до Вас в господарство.<br>
+                        Потрібно, щоб ви перекинули мені ваші установчі документи (на Вайбер або пошту).<br>
+                        Ми робимо рахунок і договір. <strong>Оплата:</strong> можемо по 100% передоплаті, або, щоб вам зручніше було — 50% передоплата і 50% по факту поставки.<br>
+                        Тоді пропоную оформляти замовлення, і в суботу культиватор вже буде у Вас в господарстві. Потрібна ваша точна адреса і ПІБ.
+                    </div>
+                    <div class="client-text">
+                        <strong>(Клієнт):</strong> цікаво / згоден
+                    </div>
+                    <div class="manager-text">
+                        <strong>Менеджер:</strong> Надішліть Ваші установчі. Я оформляю замовлення, роблю рахунок і, як скину вам, ще зателефоную. Як проплатите — скиньте, будь ласка, квитанцію!
+                    </div>
+                </div>
+
+                <!-- Чек-лист -->
+                <div class="script-section" style="background-color: #e0f2f1; border-color: #009688;">
+                    <h3>✅ Пам'ятка менеджера (Після дзвінка):</h3>
+                    <ul>
+                        <li><strong>📸 Фото/Відео:</strong> Обов'язково скинути в месенджер відео агрегату в роботі (це привід для повторного дзвінка: "дивилися чи ні?" + дотиснути).</li>
+                        <li><strong>💰 Якщо немає коштів:</strong> Продати "передзамовлення" з невеликою передоплатою (бронює агрегат і фіксує ціну).</li>
+                    </ul>
+                </div>
+            </div>
+            <div id="script-kprs" class="hidden">
+                <div class="script-section">
+                    <h2>2. Презентація рішення</h2>
+                    <div class="manager-text">
+                        <strong>Менеджер:</strong> Супер, тоді найоптимальніший варіант для вас — <span id="dynamic-model-kprs" class="highlight"></span><br>
+                        Це наш топовий передпосівний культиватор на лафетній системі. Працює швидко, рівно і не забивається.<br>
+                        За один прохід він робить ідеально рівну посівну підошву:
+                        <ul>
+                            <li>3 ряди лап — рихлять і підрізають весь бур’ян.</li>
+                            <li>2-х рядна гребінка — повністю вирівнює поле, розбиває грудочки (працює в 3-х режимах).</li>
+                            <li>Коток — ущільнює верхній шар для збереження вологи.</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="script-section">
+                    <h2>3. Конструктор (Вибір робочих органів)</h2>
+                    <div class="manager-text">
+                        <strong>Менеджер:</strong> Є 2 типи робочих органів на вибір:
+                        <ul>
+                            <li><strong>Стійка двовиткова Bianchi з квадрата 30*30 (жорстка).</strong><br>
+                                <em>Коментар:</em> Підходить під будь-який тип ґрунту, комплектується лапою 280 мм. Я Вам рекомендую саме цей варіант.</li>
+                            <li><strong>Стійка S-подібна Bellota 70*12 (пружинна).</strong><br>
+                                <em>Коментар:</em> Підходить для легких піщаних та супіщаних ґрунтів, комплектується лапою 260 мм.</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="script-section">
+                    <h2>4. Аргументація (Прохідність та Продуктивність)</h2>
+                    <div class="manager-text">
+                        <strong>Менеджер:</strong> Найголовніше — це його висока прохідність. Наш культиватор розроблений так, щоб не забивався навіть у найскладніших умовах (кукурудза, соняшник, вологий ґрунт, важка оранка).
+                        <ul>
+                            <li>Шахматне розміщення та парна кількість робочих органів — ідеально вирізає бур'ян без пропусків.</li>
+                            <li>Високі стійки + широкі м'які колеса (400-ті).</li>
+                            <li>Реально працює без зупинок.</li>
+                        </ul>
+                        <br>
+                        <strong>Продуктивність (КПРС GENERAL):</strong>
+                        <ul>
+                            <li>5 м — 3,5–4 га/год.</li>
+                            <li>6 м — 4,5–5,5 га/год.</li>
+                        </ul>
+                        <strong>Результат:</strong> За день легко робиться +5 га до Вашої звичайної продуктивності.
+                    </div>
+                </div>
+
+                <div class="script-section">
+                    <h2>5. Сервіс та Гарантія</h2>
+                    <div class="manager-text">
+                        <strong>Менеджер:</strong> Ви отримуєте РОЗШИРЕНУ гарантію на 12 місяців.<br>
+                        Наша філософія — діяти на випередження:<br>
+                        Якщо раптом щось трапиться — ми одразу ж висилаємо вам потрібну деталь (або міняємо агрегат, якщо проблема серйозна), щоб у Вас не стояла робота.<br>
+                        Ми не чекаємо тижнями "експертизи", як інші компанії. Ви працюєте, а вже потім висилаєте нам старі деталі.<br><br>
+                        <strong>Пуско-налагодження входить у вартість:</strong> Ми привозимо, і наш сервіс запускає агрегат в роботу.<br>
+                        Хоча, якщо відверто, поломки майже не трапляються — агрегат простий і дуже надійний.
+                    </div>
+                    <div class="client-text">
+                        <strong>(Клієнт):</strong> Зрозумів, яка ціна?
+                    </div>
+                </div>
+
+                <div class="script-section">
+                    <h2>6. Фіналізація та Ціна</h2>
+                    <div class="manager-text">
+                        <strong>Менеджер:</strong> Так, звичайно. Скажіть, з якої ви області і яка форма розрахунку — за гроші чи з ПДВ?
+                    </div>
+                    <div class="client-text">
+                        <strong>(Клієнт):</strong> [Область], з ПДВ
+                    </div>
+                    <div class="manager-text">
+                        <em>(Примітка: Якщо з ПДВ — обов'язково розповісти про Державну компенсацію -25%)</em><br><br>
+                        <strong>Менеджер:</strong> Ціна <span class="highlight">490 000 грн</span>. Це вже з доставкою до Вас в господарство.<br>
+                        Потрібно, щоб ви перекинули мені ваші установчі документи. Робимо рахунок і договір. <strong>Оплата:</strong> можемо 100% передоплата, або зручніше — 50% передоплата і 50% по факту поставки.<br>
+                        Тоді пропоную оформляти замовлення, і в суботу культиватор вже буде у Вас в господарстві. Потрібна ваша точна адреса і ПІБ.
+                    </div>
+                    <div class="client-text">
+                        <strong>(Клієнт):</strong> цікаво / згоден
+                    </div>
+                    <div class="manager-text">
+                        <strong>Менеджер:</strong> Надішліть Ваші установчі (на Вайбер або пошту). Я оформляю замовлення, роблю рахунок, скидаю Вам і одразу телефоную. Як проплатите — скиньте, будь ласка, квитанцію!
+                    </div>
+                </div>
+
+                <!-- Чек-лист -->
+                <div class="script-section" style="background-color: #e0f2f1; border-color: #009688;">
+                    <h3>✅ Пам'ятка менеджера (Після розмови):</h3>
+                    <ul>
+                        <li><strong>📸 Фото/Відео:</strong> Обов'язково скинути відео агрегату в роботі на месенджер (привід для дзвінка-дотискання: "чи подивились?").</li>
+                        <li><strong>💰 Якщо немає всієї суми:</strong> Продати "Передзамовлення" з невеликою передоплатою (бронювання агрегату + фіксація ціни).</li>
+                        <li><strong>🚜 Тест-драйв:</strong> Якщо клієнта цікавить ЛПР 4-5м, КПРС 5-6м або Глибокорозпушувач — запропонувати тест-драйв.</li>
+                        <li><strong>🤝 Соціальний доказ:</strong> Запропонувати глянути нашу техніку в задоволених клієнтів поблизу або запросити на завод у Запоріжжя.</li>
+                    </ul>
+                </div>
+            </div>
+
+        </div>
+        
+        <!-- Секція Лущильників (Готовий розділ) -->
+        <div id="husker-section" class="hidden">
+            <div class="script-section">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                    <h3>Навісні та Причіпні Лущильники (ЛП / ЛПР)</h3>
+                    <button class="btn btn-ttx" onclick="openTTX('husker')">📊 ЛУЩІ ТТХ</button>
+                </div>
+                
+                <div class="manager-text">
+                    <strong>Менеджер:</strong> Так, маємо навісні та причіпні лущильники. Скажіть, будь ласка, на яку потужність трактора розглядаєте агрегат?
+                </div>
+
+                <h3>Оберіть тип лущильника:</h3>
+                <div class="btn-grid">
+                    <!-- Навісні -->
+                    <button class="btn btn-lpn" onclick="selectHuskerScript('mounted', '2.6м', this)">1. 70-90 к.с. (Навісний 2.6м)</button>
+                    <button class="btn btn-lpn" onclick="selectHuskerScript('mounted', '3.2м', this)">2. 100-130 к.с. (Навісний 3.2м)</button>
+                    
+                    <!-- Причіпні ЛП -->
+                    <button class="btn btn-lpr" onclick="selectHuskerScript('trailed_lp', 'ЛП 2.6м', this)">3. 90-120 к.с. (Причіпний ЛП 2.6м)</button>
+                    <button class="btn btn-lpr" onclick="selectHuskerScript('trailed_lp', 'ЛП 3.2м', this)">4. 100-130 к.с. (Причіпний ЛП 3.2м)</button>
+
+                    <!-- Важкі ЛПР -->
+                    <button class="btn btn-lpr" onclick="selectHuskerScript('heavy_lpr', 'ЛПР 4.2м', this)">5. 130-160 к.с. (Важкий ЛПР 4.2м)</button>
+                    <button class="btn btn-lpr" onclick="selectHuskerScript('heavy_lpr', 'ЛПР 5.2м', this)">6. 150-200 к.с. (Важкий ЛПР 5.2м)</button>
+                </div>
+            </div>
+
+            <!-- СЦЕНАРІЇ ЛУЩИЛЬНИКІВ (залишаються без змін) -->
+            <div id="script-husker-mounted" class="hidden">
+                <div class="script-section">
+                    <h2>2. Презентація рішення (Навісні)</h2>
+                    <div class="client-text">
+                        <strong>(Клієнт):</strong> Цікавить навісний, трактор МТЗ 892.
+                    </div>
+                    <div class="manager-text">
+                        <strong>Менеджер:</strong> Супер, найкращий варіант для Вас буде <span class="highlight" id="husker-mounted-model">2.6м</span> захват.<br>
+                        За один прохід він якісно подрібнює пожнивні рештки кукурудзи, соняшника, пшениці, ріпака — все без питань.
+                        <br><br>
+                        <strong>Комплектація та переваги:</strong>
+                        <ul>
+                            <li>Стійка: Пружинна 90*14 Eurozappa (Італія).</li>
+                            <li>Диск: <span class="highlight">Bellota Super Sharp Ø510 мм</span> — агресивно ріже навіть товсті стебла завдяки правильному куту атаки та заточці. Ідеально робить мульчу.</li>
+                            <li>Ступичний вузол: <span class="highlight">SKF (Європа)</span> закритого типу, який не потрібно обслуговувати.</li>
+                            <li>Роторний загортач: Перемішує рештки з ґрунтом. (Важливий нюанс: він також йде як запчастина стійка+підшипник).</li>
+                            <li>Коток: Безосьовий. Вирівнює поле і закриває вологу, при цьому <span class="highlight">не забивається</span> навіть по кукурудзі.</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="script-section">
+                    <h2>3. КОНСТРУКТОР ТА ГАРАНТІЯ</h2>
+                    <div class="manager-text">
+                        <strong>Менеджер:</strong> Найголовніше — це модульна конструкція. Усі основні вузли уніфіковані та змінні.
+                        <ul>
+                            <li>Захочете замінити коток на інший тип — це робиться легко.</li>
+                            <li>Обслуговування спрощене: будь-яку деталь можна зняти і поставити нову.</li>
+                        </ul>
+                        <p class="highlight">РОЗШИРЕНА гарантія на 12 місяців:</p>
+                        Ми діємо на випередження: Якщо раптом щось трапиться — ми одразу ж висилаємо вам потрібну деталь (або міняємо агрегат, якщо проблема серйозна), щоб у Вас не стояла робота.
+                        Не так, як в інших компаніях (спочатку вишліть деталь -> чекайте експертизу -> чекайте відповідь). Ми робимо все, щоб Ви працювали, а не чекали "з моря погоди". Старі деталі вишлете нам вже потім.
+                        Хоча, якщо відверто, механізм дуже простий і надійний, таких випадків майже не буває.
+                    </div>
+                    <div class="client-text">
+                        <strong>(Клієнт):</strong> зрозумів, яка ціна?
+                    </div>
+                </div>
+
+                <div class="script-section">
+                    <h2>4. ФІНАЛІЗАЦІЯ ТА ЦІНА</h2>
+                    <div class="manager-text">
+                        <strong>Менеджер:</strong> Так, звичайно. Скажіть, будь ласка, з якої Ви області і яка форма розрахунку — за гроші чи з ПДВ?
+                    </div>
+                    <h4 style="color: #1976D2;">ВАРІАНТ 1: З ПДВ (Безготівка)</h4>
+                    <div class="manager-text">
+                        <em>(Обов'язково розповісти про Державну компенсацію -25%)</em><br><br>
+                        <strong>Менеджер:</strong> Ціна <span class="highlight">280 000 грн</span>. Це вже з доставкою до Вас в господарство.<br>
+                        Потрібно, щоб ви перекинули мені ваші установчі документи. Робимо рахунок і договір. Оплата: можемо 100% передоплата, або зручніше — 50% передоплата і 50% по факту поставки.<br>
+                        Тоді пропоную оформляти замовлення, і в суботу лущильник вже буде у Вас в господарстві. Потрібна ваша точна адреса і ПІБ.
+                    </div>
+                    <h4 style="color: #4CAF50;">ВАРІАНТ 2: ЗА ГРОШІ (Готівка)</h4>
+                    <div class="manager-text">
+                        <strong>Менеджер:</strong> Ціна <span class="highlight">270 000 грн</span>. Це вже з доставкою до Вас в господарство.<br>
+                        Передоплат ніяких не потрібно. Привозимо агрегат, і Ви на місці з водієм розраховуєтесь.<br>
+                        Тоді пропоную оформляти замовлення, і в суботу лущильник вже буде у Вас в господарстві. Потрібна ваша точна адреса і ПІБ.
+                    </div>
+                    <div class="client-text">
+                        <strong>(Клієнт):</strong> цікаво / згоден
+                    </div>
+                </div>
+                
+                <div class="script-section" style="background-color: #f3e5f5; border-color: #9C27B0;">
+                    <h3>✅ ПАМ'ЯТКА МЕНЕДЖЕРА (Після розмови):</h3>
+                    <ul>
+                        <li><strong>📸 Фото/Відео:</strong> Обов'язково скинути в месенджер відео агрегату в роботі (це привід для повторного дзвінка: "дивилися чи ні?" + дотиснути).</li>
+                        <li><strong>💰 Якщо немає всієї суми:</strong> Запропонувати "Передзамовлення" з невеликою передоплатою (бронює агрегат і фіксує ціну).</li>
+                        <li><strong>🤝 Соціальний доказ:</strong> Запропонувати глянути нашу техніку в задоволених клієнтів поблизу або запросити на завод у Запоріжжя.</li>
+                    </ul>
+                </div>
+            </div>
+            <div id="script-husker-lp" class="hidden">
+                <div class="script-section">
+                    <h2>2. Презентація рішення (Причіпні ЛП)</h2>
+                    <div class="client-text">
+                        <strong>(Клієнт):</strong> цікавить причіпний, трактор Lovol 1054.
+                    </div>
+                    <div class="manager-text">
+                        <strong>Менеджер:</strong> Супер, найкращий варіант для Вас буде <span class="highlight" id="husker-lp-model">ЛП 2.6м</span> захват.<br>
+                        За один прохід він якісно подрібнює пожнивні рештки кукурудзи, соняшника, пшениці, ріпака — все без питань.
+                        <br><br>
+                        <strong>Комплектація та переваги:</strong>
+                        <ul>
+                            <li>Стійка: Пружинна 90*14 Eurozappa (Італія).</li>
+                            <li>Диск: <span class="highlight">Bellota Super Sharp Ø510 мм</span> — агресивно ріже навіть товсті стебла. Ідеально робить мульчу.</li>
+                            <li>Ступичний вузол: <span class="highlight">SKF (Європа)</span> закритого типу, який не потрібно обслуговувати.</li>
+                            <li>Роторний загортач: Перемішує рештки з ґрунтом.</li>
+                            <li>Коток: <span class="highlight">ТАНДЕМНИЙ</span> з плаваючим шарніром. Він сам підлаштовується під рельєф ґрунту, працює ідеально рівно, закриває вологу і не забивається навіть по кукурудзі.</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="script-section">
+                    <h2>3. КОНСТРУКТОР ТА ГАРАНТІЯ</h2>
+                    <div class="manager-text">
+                        <strong>Менеджер:</strong> Усі основні вузли уніфіковані та змінні.
+                        <ul>
+                            <li>Захочете замінити коток на інший тип — це робиться легко.</li>
+                            <li>Обслуговування спрощене: будь-яку деталь можна зняти і поставити нову.</li>
+                            <li>Регулювання глибини: Дуже зручне. Ззаду — за допомогою кронштейнів котка (просто переставляєте палець у відповідне положення).</li>
+                        </ul>
+                        <p class="highlight">РОЗШИРЕНА гарантія на 12 місяців:</p>
+                        Ми діємо на випередження: Якщо раптом щось трапиться — ми одразу ж висилаємо вам потрібну деталь (або міняємо агрегат, якщо проблема серйозна), щоб у Вас не стояла робота.
+                        Ми робимо все, щоб Ви працювали, а не чекали "з моря погоди". Старі деталі вишлете нам вже потім.
+                    </div>
+                    <div class="client-text">
+                        <strong>(Клієнт):</strong> зрозумів, яка ціна?
+                    </div>
+                </div>
+
+                <div class="script-section">
+                    <h2>4. ФІНАЛІЗАЦІЯ ТА ЦІНА</h2>
+                    <div class="manager-text">
+                        <strong>Менеджер:</strong> Так, звичайно. Скажіть, будь ласка, з якої Ви області і яка форма розрахунку — за гроші чи з ПДВ?
+                    </div>
+                    <h4 style="color: #1976D2;">ВАРІАНТ 1: З ПДВ (Безготівка)</h4>
+                    <div class="manager-text">
+                        <em>(Обов'язково розповісти про Державну компенсацію -25%)</em><br><br>
+                        <strong>Менеджер:</strong> Ціна <span class="highlight">450 000 грн</span>. Це вже з доставкою до Вас в господарство.<br>
+                        Потрібно, щоб ви перекинули мені ваші установчі документи. Робимо рахунок і договір. Оплата: 100% передоплата, або 50% передоплата і 50% по факту поставки.<br>
+                        Тоді пропоную оформляти замовлення, і в суботу лущильник вже буде у Вас в господарстві.
+                    </div>
+                    <h4 style="color: #4CAF50;">ВАРІАНТ 2: ЗА ГРОШІ (Готівка)</h4>
+                    <div class="manager-text">
+                        <strong>Менеджер:</strong> Ціна <span class="highlight">435 000 грн</span>. Це вже з доставкою до Вас в господарство.<br>
+                        Передоплат ніяких не потрібно. Привозимо агрегат, і Ви на місці з водієм розраховуєтесь.<br>
+                        Тоді пропоную оформляти замовлення, і в суботу лущильник вже буде у Вас в господарстві.
+                    </div>
+                    <div class="client-text">
+                        <strong>(Клієнт):</strong> цікаво / згоден
+                    </div>
+                </div>
+
+                <div class="script-section" style="background-color: #f3e5f5; border-color: #9C27B0;">
+                    <h3>✅ ПАМ'ЯТКА МЕНЕДЖЕРА (Після розмови):</h3>
+                    <ul>
+                        <li><strong>📸 Фото/Відео:</strong> Обов'язково скинути в месенджер відео агрегату в роботі (це привід для повторного дзвінка: "дивилися чи ні?" + дотиснути).</li>
+                        <li><strong>💰 Якщо немає всієї суми:</strong> Запропонувати "Передзамовлення" з невеликою передоплатою (бронює агрегат і фіксує ціну).</li>
+                        <li><strong>🤝 Соціальний доказ:</strong> Запропонувати глянути нашу техніку в задоволених клієнтів поблизу або запросити на завод у Запоріжжя.</li>
+                    </ul>
+                </div>
+            </div>
+            <div id="script-husker-lpr" class="hidden">
+                <div class="script-section">
+                    <h2>2. Презентація рішення (Важкі ЛПР)</h2>
+                    <div class="client-text">
+                        <strong>(Клієнт):</strong> цікавить причіпний, трактор 170 к.с.
+                    </div>
+                    <div class="manager-text">
+                        <strong>Менеджер:</strong> Супер, найкращий варіант для Вас буде <span class="highlight" id="husker-lpr-model">ЛПР 5.2м</span> захват.<br>
+                        За один прохід він якісно подрібнює пожнивні рештки кукурудзи, соняшника, пшениці, ріпака — все без питань.
+                        <br><br>
+                        <strong>Комплектація та Якість роботи:</strong>
+                        <ul>
+                            <li>Стійка: Пружинна 90*14 Eurozappa (Італія).</li>
+                            <li>Диск: <span class="highlight">Bellota Super Sharp Ø510 мм</span> — агресивно ріже, ідеально робить мульчу.</li>
+                            <li>Ступичний вузол: <span class="highlight">SKF (Європа)</span> закритого типу.</li>
+                            <li>Коток: <span class="highlight">ТАНДЕМНИЙ</span> з плаваючим шарніром. Він сам підлаштовується під рельєф ґрунту, працює ідеально рівно, закриває вологу і не забивається.</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="script-section">
+                    <h2>3. КОНСТРУКТИВНІ ПЕРЕВАГИ (Лафетна система)</h2>
+                    <div class="manager-text">
+                        <strong>Менеджер:</strong> Саме наш лущильник виготовлений на <span class="highlight">Унікальній лафетній системі</span>.
+                        <ul>
+                            <li>Транспортна ширина <span class="highlight">2.95м</span>: Дуже зручно при переїздах дорогами загального користування.</li>
+                            <li>Висока прохідність: Широкі м'які колеса (400-ті) — реально працює без зупинок.</li>
+                            <li>Зручне регулювання глибини: Ззаду (кронштейни котка) та Спереду (талрепи на колесах).</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="script-section">
+                    <h2>4. СЕРВІС, ГАРАНТІЯ ТА ЗАПУСК</h2>
+                    <div class="manager-text">
+                        <strong>Менеджер:</strong> Ви отримуєте <span class="highlight">РОЗШИРЕНУ гарантію на 12 місяців</span>. Ми діємо на випередження: одразу висилаємо деталь, щоб робота не стояла. Старі деталі вишлете нам вже потім.
+                        <p class="highlight">Важливий бонус: Підключення (Пуско-Наладка) входить у вартість. Ми Вам його привозимо, і наш Сервіс запускає в роботу.</p>
+                    </div>
+                    <div class="client-text">
+                        <strong>(Клієнт):</strong> зрозумів, яка ціна?
+                    </div>
+                </div>
+
+                <div class="script-section">
+                    <h2>5. ФІНАЛІЗАЦІЯ ТА ЦІНА</h2>
+                    <div class="manager-text">
+                        <strong>Менеджер:</strong> Так, звичайно. Скажіть, будь ласка, з якої Ви області і яка форма розрахунку — за гроші чи з ПДВ?
+                    </div>
+                    <h4 style="color: #1976D2;">ВАРІАНТ 1: З ПДВ (Безготівка)</h4>
+                    <div class="manager-text">
+                        <em>(Обов'язково розповісти про Державну компенсацію -25%)</em><br><br>
+                        <strong>Менеджер:</strong> Ціна <span class="highlight">960 000 грн</span>. Це вже з доставкою до Вас в господарство.<br>
+                        Потрібно, щоб ви перекинули мені ваші установчі документи. Робимо рахунок і договір. Оплата: 100% передоплата, або 50% передоплата і 50% по факту поставки.<br>
+                        Тоді пропоную оформляти замовлення, і в суботу лущильник вже буде у Вас в господарстві.
+                    </div>
+                    <h4 style="color: #4CAF50;">ВАРІАНТ 2: ЗА ГРОШІ (Готівка)</h4>
+                    <div class="manager-text">
+                        <strong>Менеджер:</strong> Ціна <span class="highlight">910 000 грн</span>. Це вже з доставкою до Вас в господарство.<br>
+                        Передоплат ніяких не потрібно. Привозимо агрегат, і Ви на місці з водієм розраховуєтесь.<br>
+                        Тоді пропоную оформляти замовлення, і в суботу лущильник вже буде у Вас в господарстві.
+                    </div>
+                    <div class="client-text">
+                        <strong>(Клієнт):</strong> цікаво / згоден
+                    </div>
+                </div>
+
+                <div class="script-section" style="background-color: #f3e5f5; border-color: #9C27B0;">
+                    <h3>✅ ПАМ'ЯТКА МЕНЕДЖЕРА (Після розмови):</h3>
+                    <ul>
+                        <li><strong>📸 Фото/Відео:</strong> Обов'язково скинути в месенджер відео агрегату в роботі.</li>
+                        <li><strong>💰 Якщо немає всієї суми:</strong> Запропонувати "Передзамовлення" з невеликою передоплатою.</li>
+                        <li><strong>🚜 Тест-драйв:</strong> Якщо клієнта цікавить ЛПР 4-5м, КПРС 5-6м або Глибокорозпушувач — запропонувати тест-драйв.</li>
+                        <li><strong>🤝 Соціальний доказ:</strong> Запропонувати глянути нашу техніку в задоволених клієнтів поблизу або запросити на завод у Запоріжжя.</li>
+                    </ul>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- Секція КУН (Готовий розділ) -->
+        <div id="kun-section" class="hidden">
+            <div class="script-section">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                    <h3>Фронтальні навантажувачі (General X / XL)</h3>
+                    <button class="btn btn-ttx" onclick="openTTX('kun')">📊 КУН ТТХ</button>
+                </div>
+
+                <div class="client-text">
+                    <strong>(Клієнт):</strong> Мене цікавить кун на трактор. Що у Вас є?
+                </div>
+
+                <div class="manager-text">
+                    <strong>Менеджер:</strong> Так, звичайно. В нас є дві моделі:
+                    <ul>
+                        <li><span class="highlight">General Х</span> — універсальний навантажувач, підійде під будь-які задачі.</li>
+                        <li><span class="highlight">General XL</span> — якщо вам потрібно ПОВИЩЕ (висота розвантаження 4.8м).</li>
+                    </ul>
+                    Скажіть, будь ласка, на який трактор розглядаєте Навантажувач?
+                </div>
+                
+                <div class="client-text">
+                    <strong>(Клієнт):</strong> на МТЗ 82, та General Х вистачить
+                </div>
+            </div>
+            
+            <!-- СЦЕНАРІЙ КУН (залишається без змін) -->
+            <div id="script-kun-general">
+                <div class="script-section">
+                    <h2>2. ПРЕЗЕНТАЦІЯ (Ціна = Якість)</h2>
+                    <div class="manager-text">
+                        <strong>Менеджер:</strong> Супер, це найкращий вибір <span class="highlight">ЦІНА=ЯКІСТЬ</span> в Україні!<br>
+                        Це реально "третя рука фермера" — зможете вантажити зерно на фури, добрива, піддони, біг-беги, використовувати в будівництві.
+                        <br><br>
+                        <strong>Технічні переваги:</strong>
+                        <ul>
+                            <li>Міцна посилена стріла.</li>
+                            <li>Німецькі трубки Ганзафлекс для високого тиску.</li>
+                            <li>Італійські шланги та <span class="highlight">Джойстик (Італія)</span>, розподільник (Болгарія).</li>
+                            <li>Система змінних втулок: Дуже зручно в обслуговуванні при заміні (не потрібно буде виварювати, вирізати).</li>
+                        </ul>
+                        <br>
+                        <strong>Комплектація:</strong>
+                        <ul>
+                            <li>В комплект входить універсальний ківш 2м (можна грузити і зерно; якщо треба — пісок набрати, щебінь і т.д.).</li>
+                            <li>Також в комплекті йдуть тяги до заднього моста для жорсткості конструкції з кріпленням під Ресивер.</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="script-section">
+                    <h2>3. МОНТАЖ, ГАРАНТІЯ ТА КОМПЕНСАЦІЯ</h2>
+                    <div class="manager-text">
+                        <strong>Менеджер:</strong> Встановлюється дуже швидко і зручно, підключення гідравліки займає хвилини.<br>
+                        Наш сервіс приїде, змонтує його на трактор і запустить в роботу, щоб ви не витрачали на це час.
+                        <p class="highlight">РОЗШИРЕНА гарантія на 12 місяців:</p>
+                        Ми діємо на випередження: Якщо раптом щось трапиться — ми одразу ж висилаємо вам потрібну деталь (або міняємо агрегат, якщо проблема серйозна), щоб у Вас не стояла робота.
+                        Не так, як в інших компаніях (спочатку вишліть деталь -> чекайте експертизу -> чекайте відповідь). Ми робимо все, щоб Ви працювали, а не чекали "з моря погоди". Старі деталі вишлете нам вже потім.
+                        Хоча, якщо відверто, механізм дуже простий і надійний, таких випадків майже не буває.
+                        <p class="highlight">А ще держава повертає 25% вартості, бо це українське виробництво.</p>
+                    </div>
+                    <div class="client-text">
+                        <strong>(Клієнт):</strong> яка ціна?
+                    </div>
+                </div>
+
+                <div class="script-section">
+                    <h2>4. ФІНАЛІЗАЦІЯ ТА ЦІНА</h2>
+                    <div class="manager-text">
+                        <strong>Менеджер:</strong> Так, звичайно. Скажіть, будь ласка, з якої Ви області і яка форма розрахунку — за гроші чи з ПДВ?
+                    </div>
+                    <div class="client-text">
+                        <strong>(Клієнт):</strong> Вінницька область, за гроші
+                    </div>
+                    <div class="manager-text">
+                        <strong>Менеджер:</strong> Навантажувач з ковшом та джойстиком — <span class="highlight">205 000 грн</span>.
+                        <p class="highlight">Це вже з Доставкою і з підключенням до Вас в господарство.</p>
+                        Ні за що доплачувати більше не потрібно. Передоплат ніяких не потрібно, привозимо і Ви на місці з водієм розраховуєтесь.
+                        <br><br>
+                        <strong>Чому це вигідно (Незалежність):</strong>
+                        Ну і найголовніше — Ви перестаєте залежати від чужої техніки.
+                        <ul>
+                            <li>Потрібно завантажити — зробили самі.</li>
+                            <li>Потрібно розвантажити — зробили самі.</li>
+                        </ul>
+                        Вам більше не потрібно буде просити когось приїхати розвантажити добрива, чекати годинами, тратити зайві кошти. З нашим навантажувачем ви робите це самі, коли вам треба.
+                        <br>
+                        Тоді пропоную оформляти замовлення, і в суботу навантажувач вже буде у Вас в господарстві. Потрібна ваша точна адреса і ПІБ.
+                    </div>
+                </div>
+
+                <div class="script-section" style="background-color: #e0f7fa; border-color: #00BCD4;">
+                    <h3>✅ ПАМ'ЯТКА МЕНЕДЖЕРА (Після розмови):</h3>
+                    <ul>
+                        <li><strong>📸 Фото/Відео:</strong> Обов'язково скинути в месенджер відео агрегату в роботі (це привід для повторного дзвінка: "дивилися чи ні?" + дотиснути).</li>
+                        <li><strong>💰 Якщо немає всієї суми:</strong> Запропонувати "Передзамовлення" з невеликою передоплатою (бронює агрегат і фіксує ціну).</li>
+                        <li><strong>🤝 Соціальний доказ:</strong> Запропонувати глянути нашу техніку в задоволених клієнтів поблизу або запросити на завод у Запоріжжя.</li>
+                    </ul>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- Секція Глибокорозпушувачів (Готовий розділ) -->
+        <div id="ripper-section" class="hidden">
+            <div class="script-section">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                    <h3>Глибокорозпушувачі (ГРХ)</h3>
+                    <button class="btn btn-ttx" onclick="openTTX('ripper')">📊 ГРХ ТТХ</button>
+                </div>
+                
+                <div class="manager-text">
+                    <strong>Менеджер:</strong> Так, звичайно, розкажу. Наш глибокорозпушувач ГРХ якраз створений для того, щоб прибрати плужну підошву і дати ґрунту дихати. Це те, що зараз реально піднімає врожайність на виснажених полях. Скажіть будь-ласка на який трактор розглядаєте під скільки коней?
+                </div>
+
+                <h3>Оберіть модель (за потужністю трактора):</h3>
+                <div class="btn-grid">
+                    <button class="btn btn-kun-select" onclick="selectRipperScript('2.0', '150 к.с.', this)">1. від 130 к.с. -> 2.0 м (3 лапи)</button>
+                    <button class="btn btn-kun-select" onclick="selectRipperScript('2.5', '250 к.с.', this)">2. від 200 к.с. -> 2.5 м (5 лап)</button>
+                    <button class="btn btn-kun-select" onclick="selectRipperScript('3.0', '220 к.с.', this)">3. 200-250 к.с. -> 3.0 м (5/7 лап)</button>
+                </div>
+            </div>
+
+            <!-- ============================================== -->
+            <!-- СЦЕНАРІЙ 1: ГРХ 2.0 м -->
+            <!-- ============================================== -->
+            <div id="script-ripper-2-0" class="hidden">
+                <div class="script-section">
+                    <h2>2. ПРЕЗЕНТАЦІЯ РІШЕННЯ (ГРХ <span class="highlight" id="ripper-model-2-0">2.0</span> м)</h2>
+                    <div class="client-text">
+                        <strong>(Клієнт):</strong> МТЗ-1523, 150 к.с.
+                    </div>
+                    <div class="manager-text">
+                        <strong>Менеджер:</strong> Вам найкраще підійте <span class="highlight">2.0м на 3 лапи</span>, якраз буде запас, тому що на один робочий орган потрібно мінімум 40 к.с, навіть якщо земля буде тверда Ви зможете зайти в землю до 55см
+                    </div>
+                </div>
+                
+                <div class="script-section">
+                    <h2>3. КЛЮЧОВІ ПЕРЕВАГИ</h2>
+                    <div class="manager-text">
+                        <strong>Менеджер:</strong> Регулювання глибини прямо з кабіни (<span class="highlight">гідравлічно</span>), це ключова перевага, якої немає у дешевих аналогів. Ви працюєте без зупинок. Якщо потрібно глибше або мілкіше, одним рухом гідравліки, не треба виходити з трактора, не треба крутити механіку. Це дає швидкість, рівномірну глибину і комфорт трактористу.
+                        <br><br>
+                        Рама нашого розпушувача посилена, міцна, і саме головне <span class="highlight">не зварна конструкція, а модульна і скручена на метизах</span>, розрахована на дуже високі навантаження, не боїться важкого ґрунту та твердих підошв. Так як глибоке рихлення це найважча операція по навантаженню, тому міцність тут критично важлива.
+                        <br><br>
+                        За рахунок власної ваги і правильної геометрії лап агрегат стабільно входить у ґрунт і тримає глибину, навіть якщо шар твердий (та ще й є гідрорегулювання, щоб підлаштуватись).
+                        <br><br>
+                        Робочий орган із сталі товщиною <span class="highlight">40 мм</span>, це максимально надійний робочий орган. Навіть на твердій підошві він працює жорстко і рівно. Нічого не вигинається і не ламається.
+                    </div>
+                </div>
+
+                <div class="script-section">
+                    <h2>4. ГАРАНТІЯ ТА СЕРВІС ("Гра на випередження")</h2>
+                    <div class="manager-text">
+                        <strong>Менеджер:</strong> Також ви отримуєте гарантію на 12 місяців, а саме <span class="highlight">РОЗШИРЕНУ</span>:<br>
+                        Якщо раптом щось трапиться то ми одразу же висилаємо вам потрібну деталь, або якщо щось серйозне то міняємо взагалі агрегат, щоб у Вас не стояла робота (не так як в інших компаніях, що ви спочатку висилаєте деталі, вони роблять експертизу декілька тижнів а потім вже шось надсилають ВАМ, Ми в цьому плані діємо на випередження, все для вас щоб ви могли спокійно працювати а не чекати з МОРЯ ПОГОДИ) а вже після ви нам висилаєте старі деталі у відповідь, при потребі до Вас приїжджає наш сервіс! Але, якщо відверто, таких випадків майже не буває. Дуже простий і надійний механізм!
+                    </div>
+                    <div class="client-text">
+                        <strong>(Клієнт):</strong> яка ціна?
+                    </div>
+                </div>
+
+                <div class="script-section">
+                    <h2>5. ФІНАЛІЗАЦІЯ ТА ЦІНА</h2>
+                    <div class="manager-text">
+                        <strong>Менеджер:</strong> Так, звичайно, скажіть будь-ласка з якої Ви області і яка форма розрахунку - за гроші чи з ПДВ?
+                    </div>
+                    <div class="client-text">
+                        <strong>(Клієнт):</strong> Вінницька область, ПДВ
+                    </div>
+                    <div class="manager-text">
+                        <em>(Примітка: якщо з пдв то розказати ще за Державну компенсацію -25%)</em><br><br>
+                        <strong>Менеджер:</strong> Ціна <span class="highlight">390 000 грн</span> це вже з Доставкою до Вас в господарство, потрібно щоб ви перекинули мені ваші установчі документи, робимо рахунок і договір, можемо або по 100% предоплаті або щоб вам зручніше було 50% предоплата і 50% по факту поставки. Тоді пропоную оформляти замовлення і в суботу Розпушувач вже буде у Вас в господарстві, потрібна ваша точна адреса, і ПІБ.
+                    </div>
+                </div>
+                
+                <div class="script-section" style="background-color: #f3e5f5; border-color: #9C27B0;">
+                    <h3>✅ ПАМ'ЯТКА МЕНЕДЖЕРА (Після розмови):</h3>
+                    <ul>
+                        <li><strong>📸 Фото/Відео:</strong> Обовязково після розмови скинути фото відео агрегату в роботі на месенджер (це буде привід для повторного дзвінка - дивився чи ні ну і знову спробувати дожати).</li>
+                        <li><strong>💰 Якщо немає коштів:</strong> Продати йому предзамволення з невеличкою предоплатою, тобто він за маленьку суму вже бронює під себе агрегат і зберігає ціну!</li>
+                        <li><strong>🚜 Тест-драйв:</strong> Також якщо клієнта цікавить ЛПР 4-5м, або КПРС 5-6м, Глибокорозпушувач - можна запропонувати тест драйв.</li>
+                        <li><strong>🤝 Соціальний доказ:</strong> Можна також запропонувати глянути нашу техніку в інших наших задоволених клієнтів поблизу, ну або приїхати до нас на Завод в Запоріжжя.</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- ============================================== -->
+            <!-- СЦЕНАРІЙ 2: ГРХ 2.5 м -->
+            <!-- ============================================== -->
+            <div id="script-ripper-2-5" class="hidden">
+                <div class="script-section">
+                    <h2>2. ПРЕЗЕНТАЦІЯ РІШЕННЯ (ГРХ <span class="highlight" id="ripper-model-2-5">2.5</span> м)</h2>
+                    <div class="client-text">
+                        <strong>(Клієнт):</strong> ДжонДір 250 к.с.
+                    </div>
+                    <div class="manager-text">
+                        <strong>Менеджер:</strong> Вам найкраще підійте <span class="highlight">2.5м на 5 лап</span>, якраз буде запас, тому що на один робочий орган потрібно мінімум 40 к.с, навіть якщо земля буде тверда Ви зможете зайти в землю до 55см
+                    </div>
+                </div>
+                
+                <div class="script-section">
+                    <h2>3. КЛЮЧОВІ ПЕРЕВАГИ</h2>
+                    <div class="manager-text">
+                        <strong>Менеджер:</strong> Регулювання глибини прямо з кабіни (<span class="highlight">гідравлічно</span>), це ключова перевага, якої немає у дешевих аналогів. Ви працюєте без зупинок. Якщо потрібно глибше або мілкіше, одним рухом гідравліки, не треба виходити з трактора, не треба крутити механіку. Це дає швидкість, рівномірну глибину і комфорт трактористу.
+                        <br><br>
+                        Рама нашого розпушувача посилена, міцна, і саме головне <span class="highlight">не зварна конструкція, а модульна і скручена на метизах</span>, розрахована на дуже високі навантаження, не боїться важкого ґрунту та твердих підошв. Так як глибоке рихлення це найважча операція по навантаженню, тому міцність тут критично важлива.
+                        <br><br>
+                        За рахунок власної ваги і правильної геометрії лап агрегат стабільно входить у ґрунт і тримає глибину, навіть якщо шар твердий (та ще й є гідрорегулювання, щоб підлаштуватись).
+                        <br><br>
+                        Робочий орган із сталі товщиною <span class="highlight">40 мм</span>, це максимально надійний робочий орган. Навіть на твердій підошві він працює жорстко і рівно. Нічого не вигинається і не ламається.
+                    </div>
+                </div>
+
+                <div class="script-section">
+                    <h2>4. ГАРАНТІЯ ТА СЕРВІС ("Гра на випередження")</h2>
+                    <div class="manager-text">
+                        <strong>Менеджер:</strong> Також ви отримуєте гарантію на 12 місяців, а саме <span class="highlight">РОЗШИРЕНУ</span>:<br>
+                        Якщо раптом щось трапиться то ми одразу же висилаємо вам потрібну деталь, або якщо щось серйозне то міняємо взагалі агрегат, щоб у Вас не стояла робота (не так як в інших компаніях, що ви спочатку висилаєте деталі, вони роблять експертизу декілька тижнів а потім вже шось надсилають ВАМ, Ми в цьому плані діємо на випередження, все для вас щоб ви могли спокійно працювати а не чекати з МОРЯ ПОГОДИ) а вже після ви нам висилаєте старі деталі у відповідь, при потребі до Вас приїжджає наш сервіс! Але, якщо відверто, таких випадків майже не буває. Дуже простий і надійний механізм!
+                    </div>
+                    <div class="client-text">
+                        <strong>(Клієнт):</strong> яка ціна?
+                    </div>
+                </div>
+
+                <div class="script-section">
+                    <h2>5. ФІНАЛІЗАЦІЯ ТА ЦІНА</h2>
+                    <div class="manager-text">
+                        <strong>Менеджер:</strong> Так, звичайно, скажіть будь-ласка з якої Ви області і яка форма розрахунку - за гроші чи з ПДВ?
+                    </div>
+                    <div class="client-text">
+                        <strong>(Клієнт):</strong> Вінницька область, ПДВ
+                    </div>
+                    <div class="manager-text">
+                        <em>(Примітка: якщо з пдв то розказати ще за Державну компенсацію -25%)</em><br><br>
+                        <strong>Менеджер:</strong> Ціна <span class="highlight">435 000 грн</span> це вже з Доставкою до Вас в господарство, потрібно щоб ви перекинули мені ваші установчі документи, робимо рахунок і договір, можемо або по 100% предоплаті або щоб вам зручніше було 50% предоплата і 50% по факту поставки. Тоді пропоную оформляти замовлення і в суботу Розпушувач вже буде у Вас в господарстві, потрібна ваша точна адреса, і ПІБ)
+                    </div>
+                </div>
+                
+                <div class="script-section" style="background-color: #f3e5f5; border-color: #9C27B0;">
+                    <h3>✅ ПАМ'ЯТКА МЕНЕДЖЕРА (Після розмови):</h3>
+                    <ul>
+                        <li><strong>📸 Фото/Відео:</strong> Обовязково після розмови скинути фото відео агрегату в роботі на месенджер (це буде привід для повторного дзвінка - дивився чи ні ну і знову спробувати дожати).</li>
+                        <li><strong>💰 Якщо немає коштів:</strong> Продати йому предзамволення з невеличкою предоплатою, тобто він за маленьку суму вже бронює під себе агрегат і зберігає ціну!</li>
+                        <li><strong>🚜 Тест-драйв:</strong> Також якщо клієнта цікавить ЛПР 4-5м, або КПРС 5-6м, Глибокорозпушувач - можна запропонувати тест драйв.</li>
+                        <li><strong>🤝 Соціальний доказ:</strong> Можна також запропонувати глянути нашу техніку в інших наших задоволених клієнтів поблизу, ну або приїхати до нас на Завод в Запоріжжя.</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- ============================================== -->
+            <!-- СЦЕНАРІЙ 3: ГРХ 3.0 м -->
+            <!-- ============================================== -->
+            <div id="script-ripper-3-0" class="hidden">
+                <div class="script-section">
+                    <h2>2. ПРЕЗЕНТАЦІЯ РІШЕННЯ (ГРХ <span class="highlight" id="ripper-model-3-0">3.0</span> м)</h2>
+                    <div class="client-text">
+                        <strong>(Клієнт):</strong> Fendt 220 к.с.
+                    </div>
+                    <div class="manager-text">
+                        <strong>Менеджер:</strong> Вам найкраще підійте <span class="highlight">3.0м на 5 лап</span>, якраз буде запас, тому що на один робочий орган потрібно мінімум 40 к.с, навіть якщо земля буде тверда Ви зможете зайти в землю до 55см
+                    </div>
+                </div>
+                
+                <div class="script-section">
+                    <h2>3. КЛЮЧОВІ ПЕРЕВАГИ</h2>
+                    <div class="manager-text">
+                        <strong>Менеджер:</strong> Регулювання глибини прямо з кабіни (<span class="highlight">гідравлічно</span>), це ключова перевага, якої немає у дешевих аналогів. Ви працюєте без зупинок. Якщо потрібно глибше або мілкіше, одним рухом гідравліки, не треба виходити з трактора, не треба крутити механіку. Це дає швидкість, рівномірну глибину і комфорт трактористу.
+                        <br><br>
+                        Рама нашого розпушувача посилена, міцна, і саме головне <span class="highlight">не зварна конструкція, а модульна і скручена на метизах</span>, розрахована на дуже високі навантаження, не боїться важкого ґрунту та твердих підошв. Так як глибоке рихлення це найважча операція по навантаженню, тому міцність тут критично важлива.
+                        <br><br>
+                        За рахунок власної ваги і правильної геометрії лап агрегат стабільно входить у ґрунт і тримає глибину, навіть якщо шар твердий (та ще й є гідрорегулювання, щоб підлаштуватись).
+                        <br><br>
+                        Робочий орган із сталі товщиною <span class="highlight">40 мм</span>, це максимально надійний робочий орган. Навіть на твердій підошві він працює жорстко і рівно. Нічого не вигинається і не ламається.
+                    </div>
+                </div>
+
+                <div class="script-section">
+                    <h2>4. ГАРАНТІЯ ТА СЕРВІС ("Гра на випередження")</h2>
+                    <div class="manager-text">
+                        <strong>Менеджер:</strong> Також ви отримуєте гарантію на 12 місяців, а саме <span class="highlight">РОЗШИРЕНУ</span>:<br>
+                        Якщо раптом щось трапиться то ми одразу же висилаємо вам потрібну деталь, або якщо щось серйозне то міняємо взагалі агрегат, щоб у Вас не стояла робота (не так як в інших компаніях, що ви спочатку висилаєте деталі, вони роблять експертизу декілька тижнів а потім вже шось надсилають ВАМ, Ми в цьому плані діємо на випередження, все для вас щоб ви могли спокійно працювати а не чекати з МОРЯ ПОГОДИ) а вже після ви нам висилаєте старі деталі у відповідь, при потребі до Вас приїжджає наш сервіс! Але, якщо відверто, таких випадків майже не буває. Дуже простий і надійний механізм!
+                    </div>
+                    <div class="client-text">
+                        <strong>(Клієнт):</strong> яка ціна?
+                    </div>
+                </div>
+
+                <div class="script-section">
+                    <h2>5. ФІНАЛІЗАЦІЯ ТА ЦІНА</h2>
+                    <div class="manager-text">
+                        <strong>Менеджер:</strong> Так, звичайно, скажіть будь-ласка з якої Ви області і яка форма розрахунку - за гроші чи з ПДВ?
+                    </div>
+                    <div class="client-text">
+                        <strong>(Клієнт):</strong> Вінницька область, ПДВ
+                    </div>
+                    <div class="manager-text">
+                        <em>(Примітка: якщо з пдв то розказати ще за Державну компенсацію -25%)</em><br><br>
+                        <strong>Менеджер:</strong> Ціна <span class="highlight">465 000 грн</span> це вже з Доставкою до Вас в господарство, потрібно щоб ви перекинули мені ваші установчі документи, робимо рахунок і договір, можемо або по 100% предоплаті або щоб вам зручніше було 50% предоплата і 50% по факту поставки. Тоді пропоную оформляти замовлення і в суботу Розпушувач вже буде у Вас в господарстві, потрібна ваша точна адреса, і ПІБ)
+                    </div>
+                </div>
+                
+                <div class="script-section" style="background-color: #f3e5f5; border-color: #9C27B0;">
+                    <h3>✅ ПАМ'ЯТКА МЕНЕДЖЕРА (Після розмови):</h3>
+                    <ul>
+                        <li><strong>📸 Фото/Відео:</strong> Обовязково після розмови скинути фото відео агрегату в роботі на месенджер (це буде привід для повторного дзвінка - дивився чи ні ну і знову спробувати дожати).</li>
+                        <li><strong>💰 Якщо немає коштів:</strong> Продати йому предзамволення з невеличкою предоплатою, тобто він за маленьку суму вже бронює під себе агрегат і зберігає ціну!</li>
+                        <li><strong>🚜 Тест-драйв:</strong> Також якщо клієнта цікавить ЛПР 4-5м, або КПРС 5-6м, Глибокорозпушувач - можна запропонувати тест драйв.</li>
+                        <li><strong>🤝 Соціальний доказ:</strong> Можна також запропонувати глянути нашу техніку в інших наших задоволених клієнтів поблизу, ну або приїхати до нас на Завод в Запоріжжя.</li>
+                    </ul>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- Секція КРН (Новий розділ) -->
+        <div id="krn-section" class="hidden">
+            <div class="script-section">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                    <h3>Культиватори міжрядні (КРН)</h3>
+                    <button class="btn btn-ttx" onclick="openTTX('krn')">📊 КРН ТТХ</button>
+                </div>
+                
+                <div class="manager-text">
+                    <strong>Менеджер:</strong> Добрий день! Завод General, мене звати Олександр. Скажіть будь-ласка як я можу до Вас звертатись і що Вас цікавить?
+                </div>
+                
+                <div class="client-text">
+                    <strong>(Клієнт):</strong> Мене прополочний культиватор. Що у Вас є?
+                </div>
+
+                <div class="manager-text">
+                    <strong>Менеджер:</strong> Так, звичайно, розкажу. Наш КРН закриває одразу дві задачі, <span class="highlight">прополка + підживлення (з системою внесення рідких добрив)</span>. І він дуже гнучкий по комплектації. Можемо привезти вам як стандартний КРН, так і КРН із системою внесення рідких добрив (бочка, насос, форсунки) повністю все встановлено. За один прохід робите і прополку, і внесення РКД. Це економія пального, часу та менше проходів по полю.<br><br>
+                    Скажить будь ласка Вас цікавить суцільний чи розкладний і з системою внесення добрив чи без? Розкладний зручніший у транспортуванні, суцільний максимально жорсткий і надійний.
+                </div>
+
+                <h3>Обрати сценарій:</h3>
+                <div class="btn-grid">
+                    <button class="btn btn-krn" onclick="selectKrnScript('solid_no_liquid', this)">КРН 5.6 м (Суцільний, без бочки)</button>
+                    <button class="btn btn-krn" onclick="selectKrnScript('solid_with_liquid', this)">КРН 5.6 м (Суцільний, З бочкою)</button>
+                    <button class="btn btn-krn" onclick="selectKrnScript('folding', this)">КРН 5.6 м (Розкладний, без бочки)</button>
+                </div>
+            </div>
+            
+            <!-- ============================================== -->
+            <!-- СЦЕНАРІЙ 1: КРН 5.6 м (Суцільний, без бочки) - На основі наданого скрипту -->
+            <!-- ============================================== -->
+            <div id="script-krn-solid_no_liquid" class="hidden">
+                <div class="script-section">
+                    <h2>2. ПРЕЗЕНТАЦІЯ РІШЕННЯ (КРН 5.6м)</h2>
+                    <div class="client-text">
+                        <strong>(Клієнт):</strong> без бочки, суцільний
+                    </div>
+                    <div class="manager-text">
+                        <strong>Менеджер:</strong> Супер, може працювати по всіх просапних культурах (кукурудза, соняшник, соя, буряк, овочеві). Ширина міжряддя налаштовується. Якщо працюєте по молодих посівах, ставимо захисні щитки. Вони не дають ґрунту засипати рослину, навіть на високій швидкості.
+                    </div>
+                </div>
+                
+                <div class="script-section">
+                    <h2>3. КОНСТРУКТИВНІ ПЕРЕВАГИ</h2>
+                    <div class="manager-text">
+                        <strong>Менеджер:</strong> Зроблений на посилені основній рамі, міцні паралелограми. Це дуже важливо, бо працюєте на швидкості, а в міжрядді часто попадаються каміння. Він рівно проходить міжряддям, не гуляє, не смикається. Залишає Ряди чисті, бур’ян весь вирізає, не пошкоджуючи сходи. Паралелограмна система дає чітке копіювання рельєфу, всі секції працюють однаково, на стабільній глибині.
+                    </div>
+                </div>
+
+                <div class="script-section">
+                    <h2>4. ГАРАНТІЯ ТА СЕРВІС ("Гра на випередження")</h2>
+                    <div class="manager-text">
+                        <strong>Менеджер:</strong> Також ви отримуєте гарантію на 12 місяців, а саме <span class="highlight">РОЗШИРЕНУ</span>:<br>
+                        Якщо раптом щось трапиться то ми одразу же висилаємо вам потрібну деталь, або якщо щось серйозне то міняємо взагалі агрегат, щоб у Вас не стояла робота (не так як в інших компаніях, що ви спочатку висилаєте деталі, вони роблять експертизу декілька тижнів а потім вже шось надсилають ВАМ, Ми в цьому плані діємо на випередження, все для вас щоб ви могли спокійно працювати а не чекати з МОРЯ ПОГОДИ) а вже після ви нам висилаєте старі деталі у відповідь, при потребі до Вас приїжджає наш сервіс! Але, якщо відверто, таких випадків майже не буває. Дуже простий і надійний механізм!
+                    </div>
+                    <div class="client-text">
+                        <strong>(Клієнт):</strong> добре, яка ціна?
+                    </div>
+                </div>
+
+                <div class="script-section">
+                    <h2>5. ФІНАЛІЗАЦІЯ ТА ЦІНА</h2>
+                    <div class="manager-text">
+                        <strong>Менеджер:</strong> Підкажіть, будь ласка, з якої ви області і яка форма оплати, за гроші чи з ПДВ?
+                    </div>
+                    <div class="client-text">
+                        <strong>(Клієнт):</strong> Вінницька область, ПДВ
+                    </div>
+                    <div class="manager-text">
+                        <em>(Примітка: якщо з пдв то розказати ще за Державну компенсацію -25%)</em><br><br>
+                        <strong>Менеджер:</strong> Ціна <span class="highlight">295 000 грн</span> це вже з Доставкою до Вас в господарство, потрібно щоб ви перекинули мені ваші установчі документи, робимо рахунок і договір, можемо або по 100% предоплаті або щоб вам зручніше було 50% предоплата і 50% по факту поставки. Тоді пропоную оформляти замовлення і в суботу КРН вже буде у Вас в господарстві, потрібна ваша точна адреса, і ПІБ.
+                    </div>
+                </div>
+                
+                <div class="script-section" style="background-color: #f3e5f5; border-color: #9C27B0;">
+                    <h3>✅ ПАМ'ЯТКА МЕНЕДЖЕРА (Після розмови):</h3>
+                    <ul>
+                        <li><strong>📸 Фото/Відео:</strong> Обовязково після розмови скинути фото відео агрегату в роботі на месенджер (це буде привід для повторного дзвінка - дивився чи ні ну і знову спробувати дожати).</li>
+                        <li><strong>💰 Якщо немає коштів:</strong> Продати йому предзамволення з невеличкою предоплатою, тобто він за маленьку суму вже бронює під себе агрегат і зберігає ціну!</li>
+                        <li><strong>🚜 Тест-драйв:</strong> Також якщо клієнта цікавить ЛПР 4-5м, або КПРС 5-6м, Глибокорозпушувач - можна запропонувати тест драйв.</li>
+                        <li><strong>🤝 Соціальний доказ:</strong> Можна також запропонувати глянути нашу техніку в інших наших задоволених клієнтів поблизу, ну або приїхати до нас на Завод в Запоріжжя.</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- ============================================== -->
+            <!-- СЦЕНАРІЙ 2: КРН 5.6 м (Суцільний, з бочкою) - Копія, змінена ціна та акцент на РКД -->
+            <!-- ============================================== -->
+            <div id="script-krn-solid_with_liquid" class="hidden">
+                <div class="script-section">
+                    <h2>2. ПРЕЗЕНТАЦІЯ РІШЕННЯ (КРН 5.6м + Система РКД)</h2>
+                    <div class="client-text">
+                        <strong>(Клієнт):</strong> цікавить КРН з бочкою
+                    </div>
+                    <div class="manager-text">
+                        <strong>Менеджер:</strong> Супер, це наш повний комплект! <span class="highlight">Ви отримуєте прополку та точне внесення рідких добрив за один прохід</span>. Це суттєва економія часу та пального, а головне — підвищення ефективності живлення рослин.<br>
+                        КРН може працювати по всіх просапних культурах (кукурудза, соняшник, соя, буряк, овочеві). Ширина міжряддя налаштовується. Якщо працюєте по молодих посівах, ставимо захисні щитки. Вони не дають ґрунту засипати рослину, навіть на високій швидкості.
+                    </div>
+                </div>
+                
+                <div class="script-section">
+                    <h2>3. КОНСТРУКТИВНІ ПЕРЕВАГИ + СИСТЕМА РКД</h2>
+                    <div class="manager-text">
+                        <strong>Менеджер:</strong> Зроблений на посиленій основній рамі, міцні паралелограми. <span class="highlight">Він рівно проходить міжряддям, не гуляє, не смикається</span>. Залишає Ряди чисті, бур’ян весь вирізає, не пошкоджуючи сходи. Паралелограмна система дає чітке копіювання рельєфу, всі секції працюють однаково, на стабільній глибині.<br><br>
+                        <p style="font-weight: bold; color: #00796B;">Особливості системи РКД:</p>
+                        <ul>
+                            <li><span class="highlight">Ємність 500 літрів</span>, рама міцна, фіксація надійними стропами.</li>
+                            <li>Насос Remco 5500 (12В) та форсунки <span class="highlight">Wilger (Канада)</span>.</li>
+                            <li>Ви отримуєте повний комплект: ротаметри для візуального контролю потоку, манометр, пульт-ШІМ-регулятор для точного контролю роботи насоса.</li>
+                            <li>Це гарантія точного дозування добрив у потрібну зону кореневої системи.</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="script-section">
+                    <h2>4. ГАРАНТІЯ ТА СЕРВІС ("Гра на випередження")</h2>
+                    <div class="manager-text">
+                        <strong>Менеджер:</strong> Також ви отримуєте гарантію на 12 місяців, а саме <span class="highlight">РОЗШИРЕНУ</span>. Якщо раптом щось трапиться, ми одразу ж висилаємо вам потрібну деталь, щоб у Вас не стояла робота, а вже після ви нам висилаєте старі деталі у відповідь.
+                    </div>
+                    <div class="client-text">
+                        <strong>(Клієнт):</strong> добре, яка ціна?
+                    </div>
+                </div>
+
+                <div class="script-section">
+                    <h2>5. ФІНАЛІЗАЦІЯ ТА ЦІНА</h2>
+                    <div class="manager-text">
+                        <strong>Менеджер:</strong> Підкажіть, будь ласка, з якої ви області і яка форма оплати, за гроші чи з ПДВ?
+                    </div>
+                    <div class="client-text">
+                        <strong>(Клієнт):</strong> Вінницька область, ПДВ
+                    </div>
+                    <div class="manager-text">
+                        <em>(Примітка: якщо з пдв то розказати ще за Державну компенсацію -25%)</em><br><br>
+                        <strong>Менеджер:</strong> Ціна <span class="highlight">420 000 грн</span> (за комплект КРН + система РКД) це вже з Доставкою до Вас в господарство. Пропоную оформляти замовлення і в суботу КРН вже буде у Вас.
+                    </div>
+                </div>
+                
+                <div class="script-section" style="background-color: #f3e5f5; border-color: #9C27B0;">
+                    <h3>✅ ПАМ'ЯТКА МЕНЕДЖЕРА (Після розмови):</h3>
+                    <ul>
+                        <li><strong>📸 Фото/Відео:</strong> Обовязково після розмови скинути фото відео агрегату в роботі на месенджер.</li>
+                        <li><strong>💰 Якщо немає коштів:</strong> Продати йому предзамволення з невеличкою предоплатою.</li>
+                        <li><strong>🚜 Тест-драйв:</strong> Запропонувати тест драйв.</li>
+                        <li><strong>🤝 Соціальний доказ:</strong> Запропонувати глянути нашу техніку в інших наших задоволених клієнтів поблизу.</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- ============================================== -->
+            <!-- СЦЕНАРІЙ 3: КРН 5.6 м (Розкладний, без бочки) - Копія, змінена ціна (Орієнтовна) та акцент на транспорт -->
+            <!-- ============================================== -->
+            <div id="script-krn-folding" class="hidden">
+                <div class="script-section">
+                    <h2>2. ПРЕЗЕНТАЦІЯ РІШЕННЯ (КРН 5.6м Розкладний)</h2>
+                    <div class="client-text">
+                        <strong>(Клієнт):</strong> цікавить розкладний, без бочки
+                    </div>
+                    <div class="manager-text">
+                        <strong>Менеджер:</strong> Чудово, розкладний КРН — це ідеальне рішення, якщо вам потрібно часто переїжджати дорогами загального користування. <span class="highlight">Він зручніший у транспортуванні, ніж суцільний</span>. Працює по всіх просапних культурах (кукурудза, соняшник, соя, буряк, овочеві). Ширина міжряддя налаштовується.
+                    </div>
+                </div>
+                
+                <div class="script-section">
+                    <h2>3. КОНСТРУКТИВНІ ПЕРЕВАГИ</h2>
+                    <div class="manager-text">
+                        <strong>Менеджер:</strong> Зроблений на посиленій основній рамі, міцні паралелограми. Це дуже важливо, бо працюєте на швидкості, а в міжрядді часто попадаються каміння. Він рівно проходить міжряддям, не гуляє, не смикається. Залишає Ряди чисті, бур’ян весь вирізає, не пошкоджуючи сходи. Паралелограмна система дає чітке копіювання рельєфу, всі секції працюють однаково, на стабільній глибині.
+                    </div>
+                </div>
+
+                <div class="script-section">
+                    <h2>4. ГАРАНТІЯ ТА СЕРВІС ("Гра на випередження")</h2>
+                    <div class="manager-text">
+                        <strong>Менеджер:</strong> Також ви отримуєте гарантію на 12 місяців, а саме <span class="highlight">РОЗШИРЕНУ</span>. Якщо раптом щось трапиться, ми одразу ж висилаємо вам потрібну деталь, щоб у Вас не стояла робота. Ми діємо на випередження, щоб ви не чекали з моря погоди.
+                    </div>
+                    <div class="client-text">
+                        <strong>(Клієнт):</strong> добре, яка ціна?
+                    </div>
+                </div>
+
+                <div class="script-section">
+                    <h2>5. ФІНАЛІЗАЦІЯ ТА ЦІНА</h2>
+                    <div class="manager-text">
+                        <strong>Менеджер:</strong> Підкажіть, будь ласка, з якої ви області і яка форма оплати, за гроші чи з ПДВ?
+                    </div>
+                    <div class="client-text">
+                        <strong>(Клієнт):</strong> Вінницька область, ПДВ
+                    </div>
+                    <div class="manager-text">
+                        <em>(Примітка: якщо з пдв то розказати ще за Державну компенсацію -25%)</em><br><br>
+                        <strong>Менеджер:</strong> Ціна <span class="highlight">350 000 грн</span> (орієнтовна ціна для розкладного) це вже з Доставкою до Вас в господарство. Пропоную оформляти замовлення і в суботу КРН вже буде у Вас.
+                    </div>
+                </div>
+                
+                <div class="script-section" style="background-color: #f3e5f5; border-color: #9C27B0;">
+                    <h3>✅ ПАМ'ЯТКА МЕНЕДЖЕРА (Після розмови):</h3>
+                    <ul>
+                        <li><strong>📸 Фото/Відео:</strong> Обовязково після розмови скинути фото відео агрегату в роботі на месенджер.</li>
+                        <li><strong>💰 Якщо немає коштів:</strong> Продати йому предзамволення з невеличкою предоплатою.</li>
+                        <li><strong>🚜 Тест-драйв:</strong> Запропонувати тест драйв.</li>
+                        <li><strong>🤝 Соціальний доказ:</strong> Запропонувати глянути нашу техніку в інших наших задоволених клієнтів поблизу.</li>
+                    </ul>
+                </div>
+            </div>
+
+
+        </div>
+
+    </div>
+
+    <script>
+        function selectProduct(productType) {
+            // Hide all main sections
+            document.getElementById('cultivator-section').classList.add('hidden');
+            document.getElementById('husker-section').classList.add('hidden'); 
+            document.getElementById('kun-section').classList.add('hidden');
+            document.getElementById('ripper-section').classList.add('hidden'); 
+            document.getElementById('krn-section').classList.add('hidden'); // New KRN section
+            
+            // Show the selected section
+            let sectionToShow = null;
+            if (productType === 'cultivator') {
+                sectionToShow = document.getElementById('cultivator-section');
+            } else if (productType === 'husker') { 
+                sectionToShow = document.getElementById('husker-section');
+            } else if (productType === 'kun') { 
+                sectionToShow = document.getElementById('kun-section');
+            } else if (productType === 'ripper') { 
+                sectionToShow = document.getElementById('ripper-section');
+            } else if (productType === 'krn') {
+                sectionToShow = document.getElementById('krn-section');
+            }
+
+            if (sectionToShow) {
+                sectionToShow.classList.remove('hidden');
+                sectionToShow.scrollIntoView({ behavior: 'smooth' });
+            }
+        }
+
+        // Універсальна функція вибору скрипта (Культиватори)
+        function selectScript(type, param, btnElement) {
+            // Очищення кнопок
+            const buttons = btnElement.parentElement.getElementsByTagName('button');
+            for (let btn of buttons) {
+                btn.classList.remove('active');
+            }
+            btnElement.classList.add('active');
+
+            // Приховуємо всі скрипти
+            document.getElementById('script-kns').classList.add('hidden');
+            document.getElementById('script-kps-4').classList.add('hidden');
+            document.getElementById('script-kprs').classList.add('hidden');
+            
+            let selectedScriptId = '';
+
+            // Логіка вибору
+            if (type === 'kns') {
+                selectedScriptId = 'script-kns';
+                document.getElementById('dynamic-width-kns').textContent = param;
+            } else if (type === 'kps4') {
+                selectedScriptId = 'script-kps-4';
+            } else if (type === 'kprs') {
+                selectedScriptId = 'script-kprs';
+                document.getElementById('dynamic-model-kprs').textContent = param;
+            }
+
+            // Показуємо та скролимо
+            if (selectedScriptId) {
+                const scriptBlock = document.getElementById(selectedScriptId);
+                scriptBlock.classList.remove('hidden');
+                scriptBlock.scrollIntoView({ behavior: 'smooth' });
+            }
+        }
+
+        // Функція вибору скрипта (Лущильники)
+        function selectHuskerScript(type, model, btnElement) {
+            // Очищення кнопок у секції лущильників
+            const buttons = btnElement.parentElement.getElementsByTagName('button');
+            for (let btn of buttons) {
+                btn.classList.remove('active');
+            }
+            btnElement.classList.add('active');
+
+            // Приховуємо всі скрипти лущильників
+            document.getElementById('script-husker-mounted').classList.add('hidden');
+            document.getElementById('script-husker-lp').classList.add('hidden');
+            document.getElementById('script-husker-lpr').classList.add('hidden');
+
+            let selectedScriptId = '';
+
+            // Логіка вибору
+            if (type === 'mounted') {
+                selectedScriptId = 'script-husker-mounted';
+                document.getElementById('husker-mounted-model').textContent = model;
+            } else if (type === 'trailed_lp') {
+                selectedScriptId = 'script-husker-lp';
+                document.getElementById('husker-lp-model').textContent = model;
+            } else if (type === 'heavy_lpr') {
+                selectedScriptId = 'script-husker-lpr';
+                document.getElementById('husker-lpr-model').textContent = model;
+            }
+
+            // Показуємо та скролимо
+            if (selectedScriptId) {
+                const scriptBlock = document.getElementById(selectedScriptId);
+                scriptBlock.classList.remove('hidden');
+                scriptBlock.scrollIntoView({ behavior: 'smooth' });
+            }
+        }
+        
+        // Функція вибору скрипта (Глибокорозпушувач)
+        function selectRipperScript(model, hp, btnElement) {
+            // Очищення кнопок у секції розпушувачів
+            const buttons = btnElement.parentElement.getElementsByTagName('button');
+            for (let btn of buttons) {
+                btn.classList.remove('active');
+            }
+            btnElement.classList.add('active');
+
+            // Приховуємо всі скрипти розпушувачів
+            document.getElementById('script-ripper-2-0').classList.add('hidden');
+            document.getElementById('script-ripper-2-5').classList.add('hidden');
+            document.getElementById('script-ripper-3-0').classList.add('hidden');
+
+            let selectedScriptId = '';
+
+            // Логіка вибору
+            if (model === '2.0') {
+                selectedScriptId = 'script-ripper-2-0';
+            } else if (model === '2.5') {
+                selectedScriptId = 'script-ripper-2-5';
+            } else if (model === '3.0') {
+                selectedScriptId = 'script-ripper-3-0';
+            }
+
+            // Встановлюємо динамічний текст для заголовку (необов'язково, але для зручності)
+            const dynamicHeader = document.getElementById('ripper-model-' + model);
+            if (dynamicHeader) {
+                dynamicHeader.textContent = model;
+            }
+
+            // Показуємо та скролимо
+            if (selectedScriptId) {
+                const scriptBlock = document.getElementById(selectedScriptId);
+                scriptBlock.classList.remove('hidden');
+                scriptBlock.scrollIntoView({ behavior: 'smooth' });
+            }
+        }
+
+        // НОВА Функція вибору скрипта (КРН)
+        function selectKrnScript(type, btnElement) {
+            // Очищення кнопок
+            const buttons = btnElement.parentElement.getElementsByTagName('button');
+            for (let btn of buttons) {
+                btn.classList.remove('active');
+            }
+            btnElement.classList.add('active');
+
+            // Приховуємо всі скрипти КРН
+            document.getElementById('script-krn-solid_no_liquid').classList.add('hidden');
+            document.getElementById('script-krn-solid_with_liquid').classList.add('hidden');
+            document.getElementById('script-krn-folding').classList.add('hidden');
+            
+            let selectedScriptId = 'script-krn-' + type;
+
+            // Показуємо та скролимо
+            const scriptBlock = document.getElementById(selectedScriptId);
+            if (scriptBlock) {
+                scriptBlock.classList.remove('hidden');
+                scriptBlock.scrollIntoView({ behavior: 'smooth' });
+            }
+        }
+
+        // ОНОВЛЕНА функція для ТТХ
+        function openTTX(type) {
+            const modal = document.getElementById('ttxModal');
+            const cultivatorContent = document.getElementById('ttx-cultivator-content');
+            const huskerContent = document.getElementById('ttx-husker-content');
+            const kunContent = document.getElementById('ttx-kun-content');
+            const ripperContent = document.getElementById('ttx-ripper-content');
+            const krnContent = document.getElementById('ttx-krn-content'); // New
+
+            if (modal.style.display === "block") {
+                // Закриття
+                modal.style.display = "none";
+            } else {
+                // Відкриття та вибір контенту
+                cultivatorContent.classList.add('hidden');
+                huskerContent.classList.add('hidden');
+                kunContent.classList.add('hidden');
+                ripperContent.classList.add('hidden'); 
+                krnContent.classList.add('hidden'); // Hide new KRN TTH
+
+                if (type === 'cultivator') {
+                    cultivatorContent.classList.remove('hidden');
+                } else if (type === 'husker') {
+                    huskerContent.classList.remove('hidden');
+                } else if (type === 'kun') {
+                    kunContent.classList.remove('hidden');
+                } else if (type === 'ripper') { 
+                    ripperContent.classList.remove('hidden');
+                } else if (type === 'krn') { 
+                    krnContent.classList.remove('hidden');
+                }
+                modal.style.display = "block";
+            }
+        }
+
+        window.onclick = function(event) {
+            const modal = document.getElementById('ttxModal');
+            if (event.target == modal) {
+                modal.style.display = "none";
+            }
+        }
+	const toggle = document.getElementById('notepad-toggle');
+	const notepad = document.getElementById('notepad-container');
+
+	toggle.addEventListener('click', () => {
+   	 notepad.classList.toggle('open');
+});
+document.getElementById('calc-toggle').addEventListener('click', () => {
+    window.open(
+        'https://96alexaxel.github.io/ordersapp/calc.html',
+        '_blank'
+    );
+});
+	
+    </script>
+</body>
+</html>
