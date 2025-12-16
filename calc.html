@@ -1,0 +1,459 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Прайс-лист та Калькулятор</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f3f4f6; }
+        .price-btn.active {
+            background-color: #22c55e; /* green-500 */
+            color: white;
+            border-color: #22c55e;
+        }
+        .price-btn {
+            transition: all 0.2s;
+        }
+        details > summary {
+            list-style: none;
+        }
+        details > summary::-webkit-details-marker {
+            display: none;
+        }
+        .chevron {
+            transition: transform 0.3s;
+        }
+        details[open] .chevron {
+            transform: rotate(180deg);
+        }
+    </style>
+</head>
+<body class="pb-32">
+
+    <!-- Верхня панель: Доставка -->
+    <div class="bg-white shadow-md sticky top-0 z-50 p-4 mb-4">
+        <h3 class="text-sm font-bold text-gray-500 mb-2 uppercase tracking-wide">Вартість доставки:</h3>
+        <div class="flex flex-wrap gap-2" id="delivery-buttons">
+            <!-- Кнопки генеруються JS -->
+        </div>
+    </div>
+
+    <!-- Основний контент: Прайс -->
+    <div class="max-w-3xl mx-auto px-2" id="catalog-container">
+        <!-- Категорії генеруються JS -->
+    </div>
+
+    <!-- Кнопка "Калькулятор" (скрол до низу) -->
+    <div class="fixed bottom-4 right-4 z-40 md:hidden">
+        <button onclick="scrollToBottom()" class="bg-blue-600 text-white rounded-full p-4 shadow-lg hover:bg-blue-700 transition flex items-center gap-2">
+            <i class="fas fa-calculator"></i> Калькулятор
+        </button>
+    </div>
+
+    <!-- Нижня секція: Підсумок та Чек -->
+    <div class="max-w-3xl mx-auto mt-8 bg-white p-6 rounded-t-xl shadow-[0_-5px_15px_rgba(0,0,0,0.1)] border-t border-gray-200" id="calculator-section">
+        <h2 class="text-2xl font-bold mb-4 text-gray-800 border-b pb-2">Калькулятор замовлення</h2>
+
+        <!-- Знижка та Націнка -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+            <div class="bg-red-50 p-3 rounded-lg border border-red-100">
+                <label class="block text-sm font-medium text-red-700 mb-1">Знижка (грн або %)</label>
+                <input type="text" id="discount-input" placeholder="напр. 5000 або 5%" 
+                       class="w-full p-2 border border-gray-300 rounded focus:ring-2 focus:ring-red-500 outline-none"
+                       oninput="calculateTotal()">
+            </div>
+            <div class="bg-green-50 p-3 rounded-lg border border-green-100">
+                <label class="block text-sm font-medium text-green-700 mb-1">Націнка (грн або %)</label>
+                <input type="text" id="markup-input" placeholder="напр. 2000 або 2%" 
+                       class="w-full p-2 border border-gray-300 rounded focus:ring-2 focus:ring-green-500 outline-none"
+                       oninput="calculateTotal()">
+            </div>
+        </div>
+
+        <!-- Чек замовлення -->
+        <div class="bg-gray-50 p-4 rounded-lg border border-gray-200 font-mono text-sm mb-4">
+            <h3 class="font-bold text-center border-b border-dashed border-gray-400 pb-2 mb-2">ЧЕК ЗАМОВЛЕННЯ</h3>
+            <div id="receipt-items" class="space-y-2">
+                <div class="text-center text-gray-400 italic">Товари не обрані</div>
+            </div>
+            <div class="border-t border-dashed border-gray-400 my-2 pt-2 space-y-1">
+                <div class="flex justify-between" id="receipt-subtotal">
+                    <span>Сума товарів:</span>
+                    <span>0 грн</span>
+                </div>
+                <div class="flex justify-between text-blue-600" id="receipt-delivery">
+                    <span>Доставка:</span>
+                    <span>0 грн</span>
+                </div>
+                <div class="flex justify-between text-red-600 hidden" id="receipt-discount">
+                    <span>Знижка:</span>
+                    <span>-0 грн</span>
+                </div>
+                <div class="flex justify-between text-green-600 hidden" id="receipt-markup">
+                    <span>Націнка:</span>
+                    <span>+0 грн</span>
+                </div>
+            </div>
+            <div class="border-t-2 border-gray-800 pt-2 mt-2 flex justify-between text-xl font-bold">
+                <span>РАЗОМ:</span>
+                <span id="final-total">0 грн</span>
+            </div>
+        </div>
+        
+        <div class="text-center">
+             <button onclick="clearCart()" class="text-red-500 text-sm hover:underline">Очистити все</button>
+        </div>
+    </div>
+
+    <script>
+        // --- Дані ---
+        const deliveryOptions = [3000, 5000, 7000, 10000, 12000, 15000];
+        
+        const catalogData = [
+            {
+                category: "Куни",
+                items: [
+                    { name: "GENERAL-X (без ковша)", price1: 165000, price2: 190000 },
+                    { name: "GENERAL-XL (без ковша)", price1: 185000, price2: 210000 },
+                    { name: "GENERAL-XL 1221 (без ковша)", price1: 185000, price2: 210000 },
+                    { name: "GENERAL-EURO + 3-тя секція (без ковша) МТЗ", price1: 190000, price2: 216000 },
+                    { name: "GENERAL-EURO (без ковша)", price1: 185000, price2: 210000 },
+                    { name: "GENERAL-X (з ковшем в комплекті)", price1: 185000, price2: 210000 },
+                    { name: "GENERAL-XL (з ковшем в комплекті)", price1: 205000, price2: 230000 },
+                    { name: "GENERAL-EURO (з ковшем комплекті)", price1: 205000, price2: 230000 },
+                    { name: "Комплект для керування гідравлікою на дві секції (Джойстик) 2Р-40", price1: 10000, price2: 12000 },
+                    { name: "Комплект для керування гідравлікою на дві секції (Джойстик) 2Р-80", price1: 15000, price2: 17000 },
+                    { name: "Комплект третьої секції", price1: 5000, price2: 6000 }
+                ]
+            },
+            {
+                category: "Навісне до кунів",
+                items: [
+                    { name: "Ківш STANDART 2 м. 1.1 куб", price1: 30000, price2: 35000 },
+                    { name: "Ківш STANDART 2.2м 1.3 куб.", price1: 32000, price2: 37000 },
+                    { name: "Ківш будівельний 1.6 м.", price1: 30000, price2: 35000 },
+                    { name: "Ківш ЩЕЛЕПА 1.8 м.", price1: 60000, price2: 70000 },
+                    { name: "Ківш ЩЕЛЕПА 2 м.", price1: 65000, price2: 75000 },
+                    { name: "Збільшений Ківш 2.4 м на 1.5 м", price1: 335000, price2: 40000 }, // Зверніть увагу: в тексті було 335 000 і 40 000, можливо помилка в тексті, але залишаю як є
+                    { name: "Ківш із ЗАХОПЛЕННЯМ", price1: 65000, price2: 75000 },
+                    { name: "Ківш для БЕГІВ", price1: 95000, price2: 105000 },
+                    { name: "Ківш для БЕГІВ (автоматичний)", price1: 100000, price2: 110000 },
+                    { name: "ГАК ДЛЯ БЕГІВ", price1: 25000, price2: 30000 },
+                    { name: "Вила для піддонів", price1: 25000, price2: 30000 },
+                    { name: "Вила для ТЮКІВ", price1: 25000, price2: 30000 },
+                    { name: "Вила - Гак (3 в1)", price1: 35000, price2: 40000 },
+                    { name: "Вила - Гак (2 в1)", price1: 33000, price2: 36000 },
+                    { name: "Вила СІНАЖНІ", price1: 60000, price2: 70000 },
+                    { name: "Захват для ТЮКІВ", price1: 60000, price2: 70000 },
+                    { name: "Захват для КОЛОД", price1: 40000, price2: 45000 }
+                ]
+            },
+            {
+                category: "Крани",
+                items: [
+                    { name: "Кран-маніпулятор S-1500", price1: 90000, price2: 100000 },
+                    { name: "Кран-маніпулятор SL-2000", price1: 300000, price2: 340000 }
+                ]
+            },
+            {
+                category: "Відвали",
+                items: [
+                    { name: "Грейдерний відвал", price1: 60000, price2: 70000 },
+                    { name: "Відвал Універсальний (Двосторонній) на СТРІЛУ", price1: 25000, price2: 60000 },
+                    { name: "Відвал Універсальний (Двосторонній)", price1: 50000, price2: 60000 },
+                    { name: "Відвал Універсальний (Двосторонній) гідро-поворотний", price1: 65000, price2: 75000 },
+                    { name: "Відвал Універсальний (Двосторонній) гідро-поворотний EURO", price1: 70000, price2: 80000 },
+                    { name: "Відвал для буртування зерна", price1: 27000, price2: 35000 }
+                ]
+            },
+            {
+                category: "Борони пружинні",
+                items: [
+                    { name: "Борона пружинна 6 м. (без опорних коліс)", price1: 130000, price2: 140000 },
+                    { name: "Борона пружинна 6 м з колесами (7-ка/10-ка)", price1: 130000, price2: 140000 },
+                    { name: "Борона пружинна 9 м. (без опорних коліс)", price1: 150000, price2: 160000 },
+                    { name: "Борона пружинна 9 м. + опорні колеса", price1: 160000, price2: 175000 },
+                    { name: "Колеса опорні", price1: 35000, price2: 40000 },
+                    { name: "Кріплення \"євробалка\" до пружинної борони", price1: 5500, price2: 7000 },
+                    { name: "Кріплення \"трьохточка\" до пружинної борони", price1: 8000, price2: 10000 },
+                    { name: "Комплект пружин (7-ка/10ка)", price1: 40000, price2: 45000 },
+                    { name: "Комплект пружин на трубі (7-ка/10ка)", price1: 65000, price2: 75000 },
+                    { name: "Універсальна пружинна борона 9 м", price1: 250000, price2: 270000 }
+                ]
+            },
+            {
+                category: "Культиватори",
+                items: [
+                    { name: "Культиватор навісний КНС 2.6", price1: 150000, price2: 165000 },
+                    { name: "Культиватор навісний КНС 3.0", price1: 165000, price2: 180000 },
+                    { name: "Культиватор навісний КНС 3.5", price1: 175000, price2: 190000 },
+                    { name: "Культиватор навісний КНС 4.0", price1: 185000, price2: 200000 },
+                    { name: "Причіпний пристрій до КНС 4.0", price1: 125000, price2: 130000 },
+                    { name: "БПП балка причіпного пристрою", price1: 20000, price2: 23000 },
+                    { name: "Культиватор причіпний КПС 4.0", price1: 310000, price2: 330000 },
+                    { name: "Культиватор причіпний КПРС 5.0", price1: 430000, price2: 480000 },
+                    { name: "Культиватор причіпний КПРС 6.0", price1: 530000, price2: 580000 }
+                ]
+            },
+            {
+                category: "КРНи",
+                items: [
+                    { name: "КРН 4.2 навісний (міжрядний розкладний)", price1: 290000, price2: 320000 },
+                    { name: "КРН 5.6 навісний РОЗКЛАДНА рама (міжрядний)", price1: 320000, price2: 360000 },
+                    { name: "КРН 5.6 навісний СУЦІЛЬНА рама (міжрядний)", price1: 250000, price2: 280000 },
+                    { name: "КРН 5.6 навісний розкладний з БОЧКОЮ 500л (Під МТЗ, бочка спереду)", price1: 455000, price2: 510000 },
+                    { name: "КРН 5.6 навісний розкладний з БОЧКОЮ 500л (бочка на самому КРН)", price1: 420000, price2: 510000 },
+                    { name: "КРН 5.6 навісний суцільна рама з БОЧКОЮ 500л", price1: 360000, price2: 395000 },
+                    { name: "Захисний щиток рядка", price1: 31000, price2: 35000 },
+                    { name: "Бочка для рідких добрив на КРН на раму", price1: 130000, price2: 145000 },
+                    { name: "Бочка для рідких добнив на КРН розкладний (з переду трактора)", price1: 145000, price2: 160000 }
+                ]
+            },
+            {
+                category: "Лущильники",
+                items: [
+                    { name: "Лущильник 2.6 м.", price1: 260000, price2: 270000 },
+                    { name: "Лущильник 2.6 м. з тандемним котком", price1: 300000, price2: 310000 },
+                    { name: "Лущильник 2.6 м. (причіпний)", price1: 420000, price2: 435000 },
+                    { name: "Лущильник 3.2 м.", price1: 350000, price2: 360000 },
+                    { name: "Лущильник 3.2 м. з тандемним котком", price1: 415000, price2: 425000 },
+                    { name: "Лущильник 3.2 м. (причіпний)", price1: 530000, price2: 550000 },
+                    { name: "Лущильник 4.2 м. (причіпний)", price1: 750000, price2: 780000 },
+                    { name: "Лущильник 5.2 м. (причіпний)", price1: 910000, price2: 960000 },
+                    { name: "Причіпний пристрій до ЛН без катків", price1: 130000, price2: 130000 },
+                    { name: "Причіпний пристрій до ЛН2.6 з подвійними катками", price1: 190000, price2: 210000 },
+                    { name: "Причіпний пристрій до ЛН2.6 з одинарними катками", price1: 165000, price2: 190000 },
+                    { name: "Причіпний пристрій до ЛН 3.2 з одинарними катками", price1: 175000, price2: 200000 },
+                    { name: "Причіпний пристрій до ЛН3.2 з подвійними катками", price1: 215000, price2: 235000 },
+                    { name: "Тандемний (подвійні) котки на ЛН", price1: 65000, price2: 65000 },
+                    { name: "Тандемний коток замість одинарного", price1: 40000, price2: 40000 }
+                ]
+            },
+            {
+                category: "Зубові борони",
+                items: [
+                    { name: "Борона зубова 9 м. складна", price1: 390000, price2: 435000 }
+                ]
+            },
+            {
+                category: "ГРХ",
+                items: [
+                    { name: "Глибокорозпушувач 1.8 м.", price1: 350000, price2: 370000 },
+                    { name: "Глибокорозпушувач 2.5 м.", price1: 400000, price2: 425000 },
+                    { name: "Глибокорозпушувач 3 м.", price1: 435000, price2: 450000 }
+                ]
+            },
+            {
+                category: "БОЧКА КАС",
+                items: [
+                    { name: "Бочка для внесення добрив 8 куб.", price1: 480000, price2: 550000 }
+                ]
+            }
+        ];
+
+        // --- Стан ---
+        let cart = {}; // key: "category_index_item_index", value: {name, price, type (1 or 2)}
+        let selectedDelivery = 0;
+
+        // --- Ініціалізація ---
+        document.addEventListener('DOMContentLoaded', () => {
+            renderDeliveryButtons();
+            renderCatalog();
+        });
+
+        // --- Рендеринг ---
+        function renderDeliveryButtons() {
+            const container = document.getElementById('delivery-buttons');
+            deliveryOptions.forEach(price => {
+                const btn = document.createElement('button');
+                btn.className = 'px-3 py-1 bg-white border border-gray-300 rounded hover:bg-gray-100 text-sm font-medium transition';
+                btn.textContent = `+${price.toLocaleString()} грн`;
+                btn.onclick = () => toggleDelivery(price, btn);
+                container.appendChild(btn);
+            });
+        }
+
+        function toggleDelivery(price, btn) {
+            // Знімаємо активність з інших
+            const buttons = document.getElementById('delivery-buttons').children;
+            for (let b of buttons) {
+                if (b !== btn) b.classList.remove('bg-blue-600', 'text-white', 'border-blue-600');
+            }
+
+            // Перемикаємо поточну
+            if (selectedDelivery === price) {
+                selectedDelivery = 0;
+                btn.classList.remove('bg-blue-600', 'text-white', 'border-blue-600');
+            } else {
+                selectedDelivery = price;
+                btn.classList.add('bg-blue-600', 'text-white', 'border-blue-600');
+                btn.classList.remove('bg-white', 'text-gray-800');
+            }
+            calculateTotal();
+        }
+
+        function renderCatalog() {
+            const container = document.getElementById('catalog-container');
+            
+            catalogData.forEach((cat, catIdx) => {
+                const details = document.createElement('details');
+                details.className = "group mb-4 bg-white rounded-lg shadow-sm overflow-hidden border border-gray-200";
+                
+                const summary = document.createElement('summary');
+                summary.className = "flex justify-between items-center p-4 cursor-pointer bg-gray-50 hover:bg-gray-100 transition";
+                summary.innerHTML = `
+                    <span class="font-bold text-lg text-gray-800">${cat.category}</span>
+                    <span class="chevron text-gray-400"><i class="fas fa-chevron-down"></i></span>
+                `;
+                
+                const content = document.createElement('div');
+                content.className = "p-4 space-y-4";
+                
+                cat.items.forEach((item, itemIdx) => {
+                    const itemRow = document.createElement('div');
+                    itemRow.className = "flex flex-col md:flex-row md:justify-between md:items-center border-b border-gray-100 last:border-0 pb-3 last:pb-0 gap-2";
+                    
+                    const id = `${catIdx}_${itemIdx}`;
+                    
+                    itemRow.innerHTML = `
+                        <div class="font-medium text-gray-700 md:w-1/2">${item.name}</div>
+                        <div class="flex gap-2 md:w-1/2 justify-end">
+                            <button onclick="toggleItem('${id}', '${item.name}', ${item.price1}, 1, this)" 
+                                    class="price-btn w-full md:w-auto border border-gray-300 rounded px-3 py-2 text-center text-sm hover:bg-gray-50 flex flex-col items-center justify-center min-w-[120px]">
+                                <span class="text-xs text-gray-500 mb-1">Без ПДВ</span>
+                                <span class="font-bold">${item.price1.toLocaleString()} грн</span>
+                            </button>
+                            <button onclick="toggleItem('${id}', '${item.name}', ${item.price2}, 2, this)" 
+                                    class="price-btn w-full md:w-auto border border-gray-300 rounded px-3 py-2 text-center text-sm hover:bg-gray-50 flex flex-col items-center justify-center min-w-[120px]">
+                                <span class="text-xs text-gray-500 mb-1">З ПДВ</span>
+                                <span class="font-bold">${item.price2.toLocaleString()} грн</span>
+                            </button>
+                        </div>
+                    `;
+                    content.appendChild(itemRow);
+                });
+
+                details.appendChild(summary);
+                details.appendChild(content);
+                container.appendChild(details);
+            });
+        }
+
+        function toggleItem(id, name, price, type, btn) {
+            // Перевірка: чи вже вибрано цей варіант
+            if (cart[id] && cart[id].type === type) {
+                // Якщо клікнули на той самий - прибираємо
+                delete cart[id];
+                btn.classList.remove('active');
+            } else {
+                // Якщо вибрали інший варіант для цього ж товару - знімаємо активність з сусідньої кнопки
+                const parent = btn.parentElement;
+                const siblings = parent.getElementsByClassName('price-btn');
+                for (let sib of siblings) {
+                    sib.classList.remove('active');
+                }
+                
+                // Додаємо/оновлюємо в кошик
+                cart[id] = { name, price, type };
+                btn.classList.add('active');
+            }
+            calculateTotal();
+        }
+
+        function parseInput(val, total) {
+            if (!val) return 0;
+            val = val.trim();
+            if (val.includes('%')) {
+                const percent = parseFloat(val.replace('%', ''));
+                return isNaN(percent) ? 0 : (total * percent / 100);
+            }
+            const num = parseFloat(val.replace(/\s/g, '')); // видаляємо пробіли
+            return isNaN(num) ? 0 : num;
+        }
+
+        function calculateTotal() {
+            // 1. Сума товарів
+            let itemsTotal = 0;
+            const receiptItemsContainer = document.getElementById('receipt-items');
+            receiptItemsContainer.innerHTML = '';
+            
+            if (Object.keys(cart).length === 0) {
+                receiptItemsContainer.innerHTML = '<div class="text-center text-gray-400 italic">Товари не обрані</div>';
+            }
+
+            for (let key in cart) {
+                const item = cart[key];
+                itemsTotal += item.price;
+                
+                const itemDiv = document.createElement('div');
+                itemDiv.className = "flex justify-between text-gray-700";
+                itemDiv.innerHTML = `
+                    <span class="w-2/3 truncate pr-2">${item.name} <span class="text-xs text-gray-400">(${item.type === 1 ? 'Без ПДВ' : 'З ПДВ'})</span></span>
+                    <span class="w-1/3 text-right font-semibold">${item.price.toLocaleString()} грн</span>
+                `;
+                receiptItemsContainer.appendChild(itemDiv);
+            }
+
+            // 2. Доставка
+            let deliveryCost = selectedDelivery;
+
+            // 3. Базова сума для знижки (товар + доставка)
+            let baseTotal = itemsTotal + deliveryCost;
+
+            // 4. Парсинг знижки/націнки
+            const discountInput = document.getElementById('discount-input').value;
+            const markupInput = document.getElementById('markup-input').value;
+
+            const discountVal = parseInput(discountInput, baseTotal); // Рахуємо від бази? Зазвичай знижка йде на товари, але тут простіше від суми
+            const markupVal = parseInput(markupInput, baseTotal);
+
+            // 5. Фінальний підрахунок
+            const finalTotal = baseTotal - discountVal + markupVal;
+
+            // Оновлення чеку (цифри)
+            document.getElementById('receipt-subtotal').innerHTML = `<span>Сума товарів:</span> <span class="font-bold">${itemsTotal.toLocaleString()} грн</span>`;
+            document.getElementById('receipt-delivery').innerHTML = `<span>Доставка:</span> <span>${deliveryCost > 0 ? '+' : ''}${deliveryCost.toLocaleString()} грн</span>`;
+            
+            const discElem = document.getElementById('receipt-discount');
+            if (discountVal > 0) {
+                discElem.classList.remove('hidden');
+                discElem.innerHTML = `<span>Знижка:</span> <span>-${Math.round(discountVal).toLocaleString()} грн</span>`;
+            } else {
+                discElem.classList.add('hidden');
+            }
+
+            const markElem = document.getElementById('receipt-markup');
+            if (markupVal > 0) {
+                markElem.classList.remove('hidden');
+                markElem.innerHTML = `<span>Націнка:</span> <span>+${Math.round(markupVal).toLocaleString()} грн</span>`;
+            } else {
+                markElem.classList.add('hidden');
+            }
+
+            document.getElementById('final-total').textContent = `${Math.round(finalTotal).toLocaleString()} грн`;
+        }
+
+        function scrollToBottom() {
+            document.getElementById('calculator-section').scrollIntoView({ behavior: 'smooth' });
+        }
+
+        function clearCart() {
+            cart = {};
+            selectedDelivery = 0;
+            // Скидання UI кнопок цін
+            document.querySelectorAll('.price-btn').forEach(btn => btn.classList.remove('active'));
+            // Скидання UI доставки
+            document.querySelectorAll('#delivery-buttons button').forEach(btn => {
+                btn.classList.remove('bg-blue-600', 'text-white', 'border-blue-600');
+            });
+            // Скидання інпутів
+            document.getElementById('discount-input').value = '';
+            document.getElementById('markup-input').value = '';
+            
+            calculateTotal();
+        }
+    </script>
+</body>
+</html>
